@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 #include "AuxiliaryField.h"
 
 using namespace std;
@@ -61,3 +62,23 @@ string AuxiliaryField::to_string() {
 
     return ss.str();
 }
+
+void AuxiliaryField::initialize() {
+    unsigned int SEED = 2345642;
+    double RANGE_MIN = 0;
+    double RANGE_MAX = M_PI;
+
+    srand( SEED );
+
+    double re_rand;
+    for ( int x = 0; x < NX; x++ ) {
+        for ( int tau = 0; tau < NTAU; tau++ ) {
+            re_rand = ( (double)rand() / (double)RAND_MAX ) * ( RANGE_MAX - RANGE_MIN ) + RANGE_MIN;
+            elements[ x ][ tau ]  = re_rand;
+        }
+    }
+}
+
+SigmaField::SigmaField( int thisDimension, int thisNx, int thisNtau ) : AuxiliaryField( thisDimension, thisNx, thisNtau ) { }
+
+MomentumField::MomentumField( int thisDimension, int thisNx, int thisNtau ) : AuxiliaryField( thisDimension, thisNx, thisNtau ) { }

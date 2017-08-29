@@ -3,5 +3,9 @@ project(Neelix)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(SOURCE_FILES main.cpp AuxiliaryField.cpp AuxiliaryField.h)
-add_executable(Neelix ${SOURCE_FILES} AuxiliaryField.cpp AuxiliaryField.h)
+find_package(Armadillo REQUIRED)
+include_directories(${ARMADILLO_INCLUDE_DIRS})
+
+set(SOURCE_FILES main.cpp AuxiliaryField.cpp AuxiliaryField.h FermionMatrix.cpp FermionMatrix.h)
+add_executable(Neelix ${SOURCE_FILES} AuxiliaryField.cpp AuxiliaryField.h FermionMatrix.cpp FermionMatrix.h)
+target_link_libraries(Neelix ${ARMADILLO_LIBRARIES})

@@ -32,6 +32,8 @@ public:
 
     std::string to_string();
 
+    void initialize();
+
 private:
     const int dimension;
 
