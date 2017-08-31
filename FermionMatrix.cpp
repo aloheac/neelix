@@ -11,26 +11,55 @@ using namespace arma;
 UMatrix::UMatrix( unsigned int thisNX, unsigned int thisTau, SigmaField* thisSigma ) : NX( thisNX ), tau( thisTau ), ptr_sigma( thisSigma ) {
     U = cx_mat( NX, NX );  // cx_mat is an Armadillo typedef for Mat< std::complex<double> > (complex dense matrix).
     U.zeros();
-    basis = MatrixBasis::COORDINATE;
-}
 
-void UMatrix::switchBasisFlag() {
-    if ( basis ==  MatrixBasis::COORDINATE ) {
-        basis = MatrixBasis::MOMENTUM;
-    } else {
-        basis = MatrixBasis::COORDINATE;
+    if ( NX != ptr_sigma->NX ) {
+        throw AuxiliaryFieldException( "NX dimension of the passed SigmaField does not match the dimension of this UMatrix instance." );
     }
 }
 
 void UMatrix::evaluateElements( double g, double dtau, double mu ) {
-    cx_mat S( NX, NX );
+    cx_mat S( NX, NX );    S.zeros();
+    cx_mat T( NX, NX );    T.zeros();
+
     complex<double> A = sqrt( 2.0 * ( exp( dtau * g ) - 1.0 ) );
 
-    for ( unsigned int i = 0; i < NX; i++ ) {
-            S(i, i) = A * ( 1.0 + sin( ptr_sigma->get( i, tau ) ) );
+    // Generate potential energy (interaction) matrix S in coordinate basis.
+    for ( unsigned int i = 0; i < NX; i++ ) {  // Since S is diagonal, only one loop required.
+        S( i, i ) = A * ( 1.0 + sin( ptr_sigma->get( i, tau ) ) );
     }
 
-    U = S;
+    // Generate kinetic energy matrix T in momentum basis.
+    for ( unsigned int i = 0; i < NX; i++ ) {
+        const double p2 = pow( i * M_PI / (double)NX, 2 );
+        T( i, i ) = exp( -dtau * p2 / 2.0 - mu );
+    }
+
+    for ( unsigned int i = 0; i < NX; i++ ) {
+        cx_mat basis_i( NX, 1 );
+        basis_i.zeros();
+        basis_i( i, 0 ) = 1.0;
+
+        for ( unsigned int j = 0; j < NX; j++ ) {
+            cx_mat basis_j( 1, NX );
+            basis_j.zeros();
+            basis_j( 0, j ) = 1.0;
+
+            complex<double> u_ij;
+            cx_mat partialProduct;
+
+            partialProduct = ifft( S * basis_i );
+            partialProduct =  fft( T * partialProduct );
+            partialProduct = basis_j * partialProduct;
+            u_ij = partialProduct( 0, 0 );  // Retrieve scalar from single-element matrix.
+
+            U( i, j ) = u_ij;
+
+        }
+    }
+}
+
+cx_mat UMatrix::getMatrix() {
+    return U;
 }
 
 string UMatrix::to_string() {
@@ -40,4 +69,35 @@ string UMatrix::to_string() {
     ss << "]";
 
     return ss.str();
+}
+
+FermionMatrix::FermionMatrix( unsigned int this_NX, unsigned int this_NTAU, double this_g, double this_dtau, double this_mu ) :
+        NX( this_NX ), NTAU( this_NTAU ), g( this_g ), dtau( this_dtau ) {
+
+    const int SPATIAL_DIMENSION = 1;
+    UProduct = vector<UMatrix>();
+
+    ptr_sigma = new SigmaField( SPATIAL_DIMENSION, NX, NTAU );
+    ptr_sigma->initialize();
+
+    for ( unsigned int i = 0; i < NTAU; i++ ) {
+        UProduct.push_back( UMatrix( NX, i,  ptr_sigma ) );
+    }
+}
+
+FermionMatrix::~FermionMatrix() {
+    delete ptr_sigma;
+}
+
+cx_mat FermionMatrix::evaluateUProduct() {
+    cx_mat product( NX, NX );
+    product.eye();
+
+    for ( int i = 1; i < NTAU; i++ ) {
+        UProduct[ i ].evaluateElements( g, dtau, mu );
+        product *= UProduct[ i ].getMatrix();
+    }
+
+    cout << det( product ) << endl;
+    return product;
 }

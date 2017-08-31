@@ -34,12 +34,13 @@ public:
 
     void initialize();
 
-private:
     const int dimension;
 
     const int NX;
 
     const int NTAU;
+
+private:
 
     std::complex<double>** elements;
 };

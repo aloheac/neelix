@@ -29,7 +29,7 @@ AuxiliaryField::AuxiliaryField( int thisDimension, int thisNx, int thisNtau ) : 
             }
         }
     } else {
-        throw AuxiliaryFieldException( "Field is of spatial dimension other than 1; higher dimensions not yet supported." );
+        throw AuxiliaryFieldException( "AuxiliaryField: Requested field of spatial dimension other than 1; higher dimensions not yet supported." );
     }
 }
 
@@ -42,10 +42,16 @@ AuxiliaryField::~AuxiliaryField() {
 }
 
 void AuxiliaryField::set( unsigned int x, unsigned int tau, std::complex<double> value ) {
+    if ( x >= NX ) throw AuxiliaryFieldException( "AuxiliaryField: Requested to set spatial element greater than NX dimension." );
+    if ( tau >= NTAU ) throw AuxiliaryFieldException( "AuxiliaryField: Requested to set temporal element greater than NTAU dimension." );
+
     elements[ x ][ tau ] = value;
 }
 
 std::complex<double> AuxiliaryField::get( unsigned int x, unsigned int tau ) {
+    if ( x >= NX ) throw AuxiliaryFieldException( "AuxiliaryField: Requested to get spatial element greater than NX dimension." );
+    if ( tau >= NTAU ) throw AuxiliaryFieldException( "AuxiliaryField: Requested to get temporal element greater than NTAU dimension." );
+
     return elements[ x ][ tau ];
 }
 
@@ -64,9 +70,9 @@ string AuxiliaryField::to_string() {
 }
 
 void AuxiliaryField::initialize() {
-    unsigned int SEED = 2345642;
+    unsigned int SEED = 57856;
     double RANGE_MIN = 0;
-    double RANGE_MAX = M_PI;
+    double RANGE_MAX = 5;
 
     srand( SEED );
 

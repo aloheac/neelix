@@ -6,20 +6,16 @@
 #define NEELIX_FERMIONMATRIX_H
 
 #include <armadillo>
+#include <vector>
 #include "AuxiliaryField.h"
-
-enum MatrixBasis : int {
-    COORDINATE = 0,
-    MOMENTUM = 1
-};
 
 class UMatrix {
 public:
     UMatrix( unsigned int NX, unsigned int tau, SigmaField* ptr_sigma );
 
-    void switchBasisFlag();
-
     void evaluateElements( double g, double dtau, double mu );
+
+    arma::cx_mat getMatrix();
 
     std::string to_string();
 
@@ -31,7 +27,32 @@ private:
     arma::cx_mat U;
 
     SigmaField* ptr_sigma;
+};
 
-    MatrixBasis basis;
+class FermionMatrix {
+public:
+    FermionMatrix( unsigned int NX, unsigned int NTAU, double g, double dtau, double mu );
+
+    ~FermionMatrix();
+
+    std::string to_string();
+
+    arma::cx_mat evaluateUProduct();
+
+    SigmaField* ptr_sigma;
+
+private:
+    unsigned int NX;
+
+    unsigned int NTAU;
+
+    double g;
+
+    double dtau;
+
+    double mu;
+
+    std::vector<UMatrix> UProduct;
+
 };
 #endif //NEELIX_FERMIONMATRIX_H
