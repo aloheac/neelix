@@ -18,6 +18,11 @@ int main() {
     sigma.initialize();
 
     CLEvolver cl( params, &sigma );
-    cout << cl.calculateSigmaDot() << endl;
+    FermionMatrix M( params.NX, params.NTAU, params.g, params.dtau, params.mu, &sigma );
+    cout << log( pow( det( M.evaluate() ), 2 ) ) << endl;
+    cout << sigma.to_string() << endl;
+    cl.integrateSigma();
+    cout << log( pow( det( M.evaluate() ), 2 ) ) << endl;
+    cout << sigma.to_string() << endl;
     return 0;
 }
