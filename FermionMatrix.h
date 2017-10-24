@@ -35,9 +35,9 @@ public:
 
     ~FermionMatrix();
 
-    std::string to_string();
-
     arma::cx_mat evaluateUProduct();
+
+    std::complex<double> evaluateLogDet();
 
     SigmaField* ptr_sigma;
 

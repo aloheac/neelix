@@ -13,7 +13,7 @@ UMatrix::UMatrix( unsigned int thisNX, unsigned int thisTau, SigmaField* thisSig
     U.zeros();
 
     if ( NX != ptr_sigma->NX ) {
-        throw AuxiliaryFieldException( "NX dimension of the passed SigmaField does not match the dimension of this UMatrix instance." );
+        throw AuxiliaryFieldException( "UMatrix: NX dimension of the passed SigmaField does not match the dimension of this UMatrix instance." );
     }
 }
 
@@ -98,6 +98,12 @@ cx_mat FermionMatrix::evaluateUProduct() {
         product *= UProduct[ i ].getMatrix();
     }
 
-    cout << det( product ) << endl;
     return product;
+}
+
+complex<double> FermionMatrix::evaluateLogDet() {
+    cx_mat U = evaluateUProduct();
+    U = eye( NX, NX ) + U;
+
+    return log( det( U ) ); // ( 0, 0 ) grabs the complex result from the 1x1 matrix returned from det().
 }
