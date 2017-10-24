@@ -15,6 +15,8 @@ public:
 
     void evaluateElements( double g, double dtau, double mu );
 
+    void evaluateElementsOfDerivative( double g, double dtau, double mu, int delta_x );
+
     arma::cx_mat getMatrix();
 
     std::string to_string();
@@ -31,15 +33,20 @@ private:
 
 class FermionMatrix {
 public:
-    FermionMatrix( unsigned int NX, unsigned int NTAU, double g, double dtau, double mu );
+    FermionMatrix( unsigned int NX, unsigned int NTAU, double g, double dtau, double mu, SigmaField* sigma );
 
-    ~FermionMatrix();
+    arma::cx_mat evaluate();
 
-    arma::cx_mat evaluateUProduct();
-
-    std::complex<double> evaluateLogDet();
+    arma::cx_mat evaluate_derivative( int delta_x, int delta_tau );
 
     SigmaField* ptr_sigma;
+
+
+
+    // Methods to be made private after debugging:
+    arma::cx_mat evaluateUProduct();
+
+    arma::cx_mat evaluateUProductDerivative( int delta_x, int delta_tau );
 
 private:
     unsigned int NX;
