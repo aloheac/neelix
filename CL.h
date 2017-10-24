@@ -8,9 +8,25 @@
 #include <armadillo>
 #include "AuxiliaryField.h"
 
+struct MCParameters {
+    int NX;
+
+    int NTAU;
+
+    double g;
+
+    double beta;
+
+    double mu;
+
+    double dtau;
+
+    double dt;
+};
+
 class CLEvolver {
 public:
-    CLEvolver( int NX, int NTAU, double dt, SigmaField* sigma );
+    CLEvolver( MCParameters this_params, SigmaField* sigma );
 
     arma::cx_mat calculateSigmaDot();
 
@@ -18,11 +34,7 @@ public:
 
 private:
 
-    double dt;
-
-    int NX;
-
-    int NTAU;
+    MCParameters params;
 
     SigmaField* sigma;
 
