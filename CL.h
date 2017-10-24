@@ -5,6 +5,7 @@
 #ifndef NEELIX_CL_H
 #define NEELIX_CL_H
 
+#include <random>
 #include <armadillo>
 #include "AuxiliaryField.h"
 
@@ -39,6 +40,10 @@ private:
     SigmaField* sigma;
 
     SigmaField* sigma_prime;
+
+    std::normal_distribution<double> rand_distribution;
+
+    std::default_random_engine rand_generator;
 
 };
 

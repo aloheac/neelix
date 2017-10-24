@@ -8,7 +8,10 @@
 using namespace std;
 using namespace arma;
 
-CLEvolver::CLEvolver( MCParameters this_params, SigmaField* this_sigma ) : params( this_params ), sigma( this_sigma ) { }
+CLEvolver::CLEvolver( MCParameters this_params, SigmaField* this_sigma ) : params( this_params ), sigma( this_sigma ) {
+    rand_generator = default_random_engine( 23412341 );
+    rand_distribution = normal_distribution<double>( 0.0, 6.0 );
+}
 
 cx_mat CLEvolver::calculateSigmaDot() {
     // Calculate the fermion matrix and its inverse for the current sigma field.
@@ -32,11 +35,13 @@ cx_mat CLEvolver::calculateSigmaDot() {
 void CLEvolver::integrateSigma() {
     cx_mat sigma_dot = calculateSigmaDot();
     complex<double> current;
+    double r;
 
     for ( int i = 0; i < params.NX; i++ ) {
         for (int j = 0; j < params.NTAU; j++) {
             current = sigma->get( i, j );
-            sigma->set( i, j, current + sigma_dot( i, j ) * params.dt );
+            r = rand_distribution( rand_generator );
+            sigma->set( i, j, current + sigma_dot( i, j ) * params.dt + r * sqrt( params.dt ) );
 
         }
     }

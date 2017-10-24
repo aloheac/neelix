@@ -7,11 +7,11 @@ using namespace std;
 
 int main() {
     MCParameters params;
-    params.NX = 5;
+    params.NX = 30;
     params.NTAU = 5;
     params.dt = 0.2;
-    params.g = 0.35;
-    params.mu = 0.0;
+    params.g = 0.5;
+    params.mu = 0.5;
     params.dtau = 0.05;
 
     SigmaField sigma( 1, params.NX, params.NTAU );
@@ -19,10 +19,11 @@ int main() {
 
     CLEvolver cl( params, &sigma );
     FermionMatrix M( params.NX, params.NTAU, params.g, params.dtau, params.mu, &sigma );
-    cout << log( pow( det( M.evaluate() ), 2 ) ) << endl;
-    cout << sigma.to_string() << endl;
-    cl.integrateSigma();
-    cout << log( pow( det( M.evaluate() ), 2 ) ) << endl;
-    cout << sigma.to_string() << endl;
+
+    for ( int i = 0; i < 100; i++ ) {
+        cout << log( pow( det( M.evaluate() ), 2 ) ) << endl;
+        cl.integrateSigma();
+    }
+
     return 0;
 }
