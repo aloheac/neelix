@@ -2,28 +2,29 @@
 #include "AuxiliaryField.h"
 #include "FermionMatrix.h"
 #include "CL.h"
+#include "Observables.h"
 
 using namespace std;
 
 int main() {
     MCParameters params;
-    params.NX = 30;
-    params.NTAU = 5;
+    params.NX = 10;
+    params.NTAU = 20;
     params.dt = 0.2;
-    params.g = 0.5;
-    params.mu = 0.5;
+    params.g = 0.2;
+    params.mu = 1.0;
     params.dtau = 0.05;
 
     SigmaField sigma( 1, params.NX, params.NTAU );
     sigma.initialize();
 
     CLEvolver cl( params, &sigma );
-    FermionMatrix M( params.NX, params.NTAU, params.g, params.dtau, params.mu, &sigma );
 
     for ( int i = 0; i < 100; i++ ) {
-        cout << log( pow( det( M.evaluate() ), 2 ) ) << endl;
         cl.integrateSigma();
+        cout << calculate_density( params, &sigma ) << endl;
     }
+
 
     return 0;
 }

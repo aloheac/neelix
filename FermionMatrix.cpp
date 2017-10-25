@@ -25,13 +25,15 @@ void UMatrix::evaluateElements( double g, double dtau, double mu ) {
 
     // Generate potential energy (interaction) matrix S in coordinate basis.
     for ( unsigned int i = 0; i < NX; i++ ) {  // Since S is diagonal, only one loop required.
-        S( i, i ) = A * ( 1.0 + sin( ptr_sigma->get( i, tau ) ) );
+        S( i, i ) = 1.0 + A * sin( ptr_sigma->get( i, tau ) );
     }
 
     // Generate kinetic energy matrix T in momentum basis.
+    int p_i;
     for ( unsigned int i = 0; i < NX; i++ ) {
-        const double p2 = pow( i * M_PI / (double)NX, 2 );
-        T( i, i ) = exp( -dtau * p2 / 2.0 - mu );
+        p_i = i - ( NX - 1 ) / 2;
+        const double p2 = pow( 2.0 * p_i * M_PI / (double)NX, 2 );
+        T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) );
     }
 
     for ( unsigned int i = 0; i < NX; i++ ) {
@@ -50,7 +52,7 @@ void UMatrix::evaluateElements( double g, double dtau, double mu ) {
             partialProduct = ifft( S * basis_i );
             partialProduct =  fft( T * partialProduct );
             partialProduct = basis_j * partialProduct;
-            u_ij = partialProduct( 0, 0 );  // Retrieve scalar from single-element matrix.
+            u_ij = as_scalar( partialProduct );  // Retrieve scalar from single-element matrix.
 
             U( i, j ) = u_ij;
 
@@ -70,15 +72,15 @@ void UMatrix::evaluateElementsOfDerivative( double g, double dtau, double mu, in
         if ( i == delta_x ) {
             S( i, i ) = A * cos( ptr_sigma->get( i, tau ) );  // Derivative of V
         } else {
-            S( i, i ) = A * ( 1.0 + sin( ptr_sigma->get( i, tau ) ) );
+            S( i, i ) = 1.0 + A * sin( ptr_sigma->get( i, tau ) );
         }
 
     }
 
     // Generate kinetic energy matrix T in momentum basis.
     for ( unsigned int i = 0; i < NX; i++ ) {
-        const double p2 = pow( i * M_PI / (double)NX, 2 );
-        T( i, i ) = exp( -dtau * p2 / 2.0 - mu );
+        const double p2 = pow( 2.0 * i * M_PI / (double)NX, 2 );
+        T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) );
     }
 
     for ( unsigned int i = 0; i < NX; i++ ) {
@@ -97,7 +99,7 @@ void UMatrix::evaluateElementsOfDerivative( double g, double dtau, double mu, in
             partialProduct = ifft( S * basis_i );
             partialProduct =  fft( T * partialProduct );
             partialProduct = basis_j * partialProduct;
-            u_ij = partialProduct( 0, 0 );  // Retrieve scalar from single-element matrix.
+            u_ij = as_scalar( partialProduct );  // Retrieve scalar from single-element matrix.
 
             U( i, j ) = u_ij;
 
@@ -119,7 +121,7 @@ string UMatrix::to_string() {
 }
 
 FermionMatrix::FermionMatrix( unsigned int this_NX, unsigned int this_NTAU, double this_g, double this_dtau, double this_mu, SigmaField* sigma ) :
-        NX( this_NX ), NTAU( this_NTAU ), g( this_g ), dtau( this_dtau ), ptr_sigma( sigma ) {
+        NX( this_NX ), NTAU( this_NTAU ), g( this_g ), dtau( this_dtau ), ptr_sigma( sigma ), mu( this_mu ) {
 
     const int SPATIAL_DIMENSION = 1;
     UProduct = vector<UMatrix>();
