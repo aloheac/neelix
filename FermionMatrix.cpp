@@ -31,7 +31,9 @@ void UMatrix::evaluateElements( double g, double dtau, double mu ) {
     // Generate kinetic energy matrix T in momentum basis.
     int p_i;
     for ( unsigned int i = 0; i < NX; i++ ) {
-        p_i = i - ( NX - 1 ) / 2;
+        // Reorganize momentum basis so that it coincides with basis of FFT.
+        if ( i <= ( NX - 1 ) / 2 ) { p_i = i; } else { p_i = -NX + i; }
+
         const double p2 = pow( 2.0 * p_i * M_PI / (double)NX, 2 );
         T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) );
     }
@@ -55,7 +57,6 @@ void UMatrix::evaluateElements( double g, double dtau, double mu ) {
             u_ij = as_scalar( partialProduct );  // Retrieve scalar from single-element matrix.
 
             U( i, j ) = u_ij;
-
         }
     }
 }
@@ -80,7 +81,9 @@ void UMatrix::evaluateElementsOfDerivative( double g, double dtau, double mu, in
     // Generate kinetic energy matrix T in momentum basis.
     int p_i;
     for ( unsigned int i = 0; i < NX; i++ ) {
-        p_i = i - ( NX - 1 ) / 2;
+        // Reorganize momentum basis so that it coincides with basis of FFT.
+        if ( i <= ( NX - 1 ) / 2 ) { p_i = i; } else { p_i = -NX + i; }
+
         const double p2 = pow( 2.0 * p_i * M_PI / (double)NX, 2 );
         T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) );
     }
