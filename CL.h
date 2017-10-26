@@ -35,9 +35,9 @@ public:
 
     void integrateSigma();
 
-private:
-
     MCParameters params;
+
+private:
 
     SigmaField* sigma;
 

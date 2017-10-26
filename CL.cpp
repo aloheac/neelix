@@ -4,6 +4,7 @@
 
 #include "CL.h"
 #include "FermionMatrix.h"
+#include "Observables.h"
 
 using namespace std;
 using namespace arma;
@@ -35,7 +36,9 @@ cx_mat CLEvolver::calculateSigmaDot() {
 void CLEvolver::integrateSigma() {
     cx_mat sigma_dot = calculateSigmaDot();
     complex<double> current;
-    complex<double> action, regulator, noise;
+    complex<double> action, regulator, noise, total;
+    vector<double> vec_action_re;
+    vector<double> vec_action_im;
 
     for ( int i = 0; i < params.NX; i++ ) {
         for (int j = 0; j < params.NTAU; j++) {
@@ -43,9 +46,16 @@ void CLEvolver::integrateSigma() {
             noise = complex<double>( rand_distribution( rand_generator ) ) * sqrt( params.dt );
             regulator = complex<double>( -2.0 * params.xi * sigma->get( i,j ).real() * params.dt, -2.0 * params.xi * sigma->get( i, j ).imag() * params.dt );
             action = sigma_dot( i, j ) * params.dt;
+            total =  action + regulator + noise;
 
-            sigma->set( i, j, current + action + regulator + noise );
+            vec_action_re.push_back( total.real() );
+            vec_action_im.push_back( total.imag() );
+
+            sigma->set( i, j, current + total );
 
         }
     }
+    cout << mean( vec_action_re ) << endl;
+    if ( abs( mean( vec_action_re ) ) > 0.2 or abs( mean( vec_action_im ) ) > 0.2 ) params.dt /= 2;
+    if ( abs( mean( vec_action_re ) ) < 0.002 ) params.dt *= 2;
 }

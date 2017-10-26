@@ -11,7 +11,7 @@ int main() {
     MCParameters params;
     params.NX = 21;
     params.NTAU = 10;
-    params.dt = 0.002;
+    params.dt = 0.001;
     params.g = 0.7071;
     params.mu = -5;
     params.dtau = 0.2;
@@ -27,14 +27,14 @@ int main() {
     CLEvolver cl( params, &sigma );
     vector<double> density;
 
-    for ( int i = 0; i < 1000; i++ ) {
+    for ( int i = 0; i < 100; i++ ) {
         cl.integrateSigma();
         complex<double> next_density = calculate_density( params, &sigma );
         density.push_back( next_density.real() );
 
-        cout << i << "    " << next_density << "    " << mean( density ) << endl;
+        cout << i << "    " << next_density << "    " << mean( density ) << "    " << cl.params.dt << endl;
     }
 
-
+    cout << sigma.to_string() << endl;
     return 0;
 }
