@@ -24,7 +24,7 @@ cx_mat CLEvolver::calculateSigmaDot() {
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
             cx_mat deltaM = matM.evaluate_derivative(i, j);
-            deltaS = 2.0 * as_scalar( trace( Minv * deltaM ) );
+            deltaS = -2.0 * as_scalar( trace( Minv * deltaM ) );
             sigma_dot( i, j ) = deltaS;
         }
     }
@@ -35,13 +35,16 @@ cx_mat CLEvolver::calculateSigmaDot() {
 void CLEvolver::integrateSigma() {
     cx_mat sigma_dot = calculateSigmaDot();
     complex<double> current;
-    double r;
+    complex<double> action, regulator, noise;
 
     for ( int i = 0; i < params.NX; i++ ) {
         for (int j = 0; j < params.NTAU; j++) {
             current = sigma->get( i, j );
-            r = rand_distribution( rand_generator );
-            sigma->set( i, j, current + sigma_dot( i, j ) * params.dt + r * sqrt( params.dt ) );
+            noise = complex<double>( rand_distribution( rand_generator ) ) * sqrt( params.dt );
+            regulator = complex<double>( -2.0 * params.xi * sigma->get( i,j ).real() * params.dt, -2.0 * params.xi * sigma->get( i, j ).imag() * params.dt );
+            action = sigma_dot( i, j ) * params.dt;
+
+            sigma->set( i, j, current + action + regulator + noise );
 
         }
     }

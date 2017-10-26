@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include "AuxiliaryField.h"
 #include "FermionMatrix.h"
 #include "CL.h"
@@ -8,21 +9,30 @@ using namespace std;
 
 int main() {
     MCParameters params;
-    params.NX = 10;
-    params.NTAU = 20;
-    params.dt = 0.2;
-    params.g = 0.2;
-    params.mu = 1.0;
-    params.dtau = 0.05;
+    params.NX = 21;
+    params.NTAU = 10;
+    params.dt = 0.002;
+    params.g = 0.7071;
+    params.mu = -5;
+    params.dtau = 0.2;
+    params.xi = 0.01;
+
+    cout << "Input parameters:" << endl;
+    cout << "    NX: " << params.NX << endl;
+    cout << "    MU: " << params.mu << endl;
 
     SigmaField sigma( 1, params.NX, params.NTAU );
     sigma.initialize();
 
     CLEvolver cl( params, &sigma );
+    vector<double> density;
 
-    for ( int i = 0; i < 100; i++ ) {
+    for ( int i = 0; i < 1000; i++ ) {
         cl.integrateSigma();
-        cout << calculate_density( params, &sigma ) << endl;
+        complex<double> next_density = calculate_density( params, &sigma );
+        density.push_back( next_density.real() );
+
+        cout << i << "    " << next_density << "    " << mean( density ) << endl;
     }
 
 

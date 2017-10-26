@@ -2,6 +2,7 @@
 // Created by loheac on 10/24/17.
 //
 
+#include <vector>
 #include "CL.h"
 #include <math.h>
 #include "Observables.h"
@@ -9,6 +10,15 @@
 
 using namespace std;
 using namespace arma;
+
+double mean( vector<double> vec ) {
+    double sum = 0;
+    for ( vector<double>::iterator iter = vec.begin(); iter != vec.end(); ++iter ) {
+        sum += *iter;
+    }
+
+    return sum / vec.size();
+}
 
 double freeGasDensity( int NX, double BETA, double MU ) {
     double freeGasDensity = 0.0;

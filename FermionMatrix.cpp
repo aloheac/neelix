@@ -78,8 +78,10 @@ void UMatrix::evaluateElementsOfDerivative( double g, double dtau, double mu, in
     }
 
     // Generate kinetic energy matrix T in momentum basis.
+    int p_i;
     for ( unsigned int i = 0; i < NX; i++ ) {
-        const double p2 = pow( 2.0 * i * M_PI / (double)NX, 2 );
+        p_i = i - ( NX - 1 ) / 2;
+        const double p2 = pow( 2.0 * p_i * M_PI / (double)NX, 2 );
         T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) );
     }
 

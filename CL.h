@@ -23,6 +23,8 @@ struct MCParameters {
     double dtau;
 
     double dt;
+
+    double xi;
 };
 
 class CLEvolver {
