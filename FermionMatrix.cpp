@@ -8,34 +8,38 @@
 using namespace std;
 using namespace arma;
 
-UMatrix::UMatrix( unsigned int thisNX, unsigned int thisTau, SigmaField* thisSigma ) : NX( thisNX ), tau( thisTau ), ptr_sigma( thisSigma ) {
+UMatrix::UMatrix( unsigned int thisNX, unsigned int thisTau, double this_dtau, double this_mu, double this_g, SigmaField* thisSigma )
+        : NX( thisNX ), tau( thisTau ), ptr_sigma( thisSigma ), dtau( this_dtau ), mu( this_mu ), g( this_g ) {
     U = cx_mat( NX, NX );  // cx_mat is an Armadillo typedef for Mat< std::complex<double> > (complex dense matrix).
     U.zeros();
 
     if ( NX != ptr_sigma->NX ) {
         throw AuxiliaryFieldException( "UMatrix: NX dimension of the passed SigmaField does not match the dimension of this UMatrix instance." );
     }
-}
 
-void UMatrix::evaluateElements( double g, double dtau, double mu ) {
-    cx_mat S( NX, NX );    S.zeros();
-    cx_mat T( NX, NX );    T.zeros();
-
-    complex<double> A = sqrt( 2.0 * ( exp( dtau * g ) - 1.0 ) );
-
-    // Generate potential energy (interaction) matrix S in coordinate basis.
-    for ( unsigned int i = 0; i < NX; i++ ) {  // Since S is diagonal, only one loop required.
-        S( i, i ) = 1.0 + A * sin( ptr_sigma->get( i, tau ) );
-    }
-
-    // Generate kinetic energy matrix T in momentum basis.
+    // Generate kinetic energy matrix T in momentum basis. This is calculated once at construction and then stored
+    // for all future calculations.
+    T = cx_mat( NX, NX );
+    T.zeros();
     int p_i;
+
     for ( unsigned int i = 0; i < NX; i++ ) {
         // Reorganize momentum basis so that it coincides with basis of FFT.
         if ( i <= ( NX - 1 ) / 2 ) { p_i = i; } else { p_i = -NX + i; }
 
         const double p2 = pow( 2.0 * p_i * M_PI / (double)NX, 2 );
         T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) );
+    }
+
+}
+
+void UMatrix::evaluateElements() {
+    cx_mat S( NX, NX );    S.zeros();
+    complex<double> A = sqrt( 2.0 * ( exp( dtau * g ) - 1.0 ) );
+
+    // Generate potential energy (interaction) matrix S in coordinate basis.
+    for ( unsigned int i = 0; i < NX; i++ ) {  // Since S is diagonal, only one loop required.
+        S( i, i ) = 1.0 + A * sin( ptr_sigma->get( i, tau ) );
     }
 
     for ( unsigned int i = 0; i < NX; i++ ) {
@@ -61,10 +65,8 @@ void UMatrix::evaluateElements( double g, double dtau, double mu ) {
     }
 }
 
-void UMatrix::evaluateElementsOfDerivative( double g, double dtau, double mu, int delta_x) {
+void UMatrix::evaluateElementsOfDerivative( int delta_x ) {
     cx_mat S( NX, NX );    S.zeros();
-    cx_mat T( NX, NX );    T.zeros();
-
     complex<double> A = sqrt( 2.0 * ( exp( dtau * g ) - 1.0 ) );
 
     // Generate potential energy (interaction) matrix S in coordinate basis, where a derivative with respect to sigma
@@ -76,16 +78,6 @@ void UMatrix::evaluateElementsOfDerivative( double g, double dtau, double mu, in
             S( i, i ) = 1.0 + A * sin( ptr_sigma->get( i, tau ) );
         }
 
-    }
-
-    // Generate kinetic energy matrix T in momentum basis.
-    int p_i;
-    for ( unsigned int i = 0; i < NX; i++ ) {
-        // Reorganize momentum basis so that it coincides with basis of FFT.
-        if ( i <= ( NX - 1 ) / 2 ) { p_i = i; } else { p_i = -NX + i; }
-
-        const double p2 = pow( 2.0 * p_i * M_PI / (double)NX, 2 );
-        T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) );
     }
 
     for ( unsigned int i = 0; i < NX; i++ ) {
@@ -132,7 +124,7 @@ FermionMatrix::FermionMatrix( unsigned int this_NX, unsigned int this_NTAU, doub
     UProduct = vector<UMatrix>();
 
     for ( unsigned int i = 0; i < NTAU; i++ ) {
-        UProduct.push_back( UMatrix( NX, i,  ptr_sigma ) );
+        UProduct.push_back( UMatrix( NX, i, dtau, mu, g, ptr_sigma ) );
     }
 }
 
@@ -141,7 +133,7 @@ cx_mat FermionMatrix::evaluateUProduct() {
     product.eye();
 
     for ( int i = 1; i < NTAU; i++ ) {
-        UProduct[ i ].evaluateElements( g, dtau, mu );
+        UProduct[ i ].evaluateElements();
         product *= UProduct[ i ].getMatrix();
     }
 
@@ -154,9 +146,9 @@ cx_mat FermionMatrix::evaluateUProductDerivative( int delta_x, int delta_tau) {
 
     for ( int i = 1; i < NTAU; i++ ) {
         if ( i == delta_tau ) {
-            UProduct[ i ].evaluateElementsOfDerivative( g, dtau, mu, delta_x );
+            UProduct[ i ].evaluateElementsOfDerivative( delta_x );
         } else {
-            UProduct[ i ].evaluateElements( g, dtau, mu );
+            UProduct[ i ].evaluateElements();
         }
         product *= UProduct[ i ].getMatrix();
     }

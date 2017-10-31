@@ -11,11 +11,11 @@
 
 class UMatrix {
 public:
-    UMatrix( unsigned int NX, unsigned int tau, SigmaField* ptr_sigma );
+    UMatrix( unsigned int NX, unsigned int tau, double dtau, double mu, double g, SigmaField* ptr_sigma );
 
-    void evaluateElements( double g, double dtau, double mu );
+    void evaluateElements();
 
-    void evaluateElementsOfDerivative( double g, double dtau, double mu, int delta_x );
+    void evaluateElementsOfDerivative( int delta_x );
 
     arma::cx_mat getMatrix();
 
@@ -26,7 +26,15 @@ private:
 
     unsigned int tau;
 
+    double dtau;
+
+    double mu;
+
+    double g;
+
     arma::cx_mat U;
+
+    arma::cx_mat T;
 
     SigmaField* ptr_sigma;
 };
