@@ -11,6 +11,24 @@
 using namespace std;
 using namespace arma;
 
+double max( vector<double> vec ) {
+    double x = abs( vec[0] );
+    for ( int i = 1; i < vec.size(); i++ ) {
+        if ( abs( vec[i] ) > x ) x = abs( vec[i] );
+    }
+
+    return x;
+}
+
+double min( vector<double> vec ) {
+    double x = abs( vec[0] );
+    for ( int i = 1; i < vec.size(); i++ ) {
+        if ( abs( vec[i] ) < x ) x = abs( vec[i] );
+    }
+
+    return x;
+}
+
 double mean( vector<double> vec ) {
     double sum = 0;
     for ( vector<double>::iterator iter = vec.begin(); iter != vec.end(); ++iter ) {

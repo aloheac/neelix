@@ -9,6 +9,10 @@
 #include "Observables.h"
 #include "FermionMatrix.h"
 
+double max( std::vector<double> vec );
+
+double min( std::vector<double> vec );
+
 double mean( std::vector<double> vec );
 
 std::complex<double> calculate_density( MCParameters params, SigmaField* sigma );

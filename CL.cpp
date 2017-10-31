@@ -55,7 +55,7 @@ void CLEvolver::integrateSigma() {
 
         }
     }
-    cout << mean( vec_action_re ) << endl;
-    if ( abs( mean( vec_action_re ) ) > 0.2 or abs( mean( vec_action_im ) ) > 0.2 ) params.dt /= 2;
-    if ( abs( mean( vec_action_re ) ) < 0.002 ) params.dt *= 2;
+    cout << max( vec_action_re ) << "    " << min( vec_action_re ) << endl;
+    if ( max( vec_action_re ) > 0.2 or max( vec_action_im ) > 0.2 ) {params.dt /= 2; }
+    if ( min( vec_action_re ) < 0.0002 ) params.dt *= 2;
 }
