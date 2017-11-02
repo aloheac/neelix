@@ -132,7 +132,7 @@ cx_mat FermionMatrix::evaluateUProduct() {
     cx_mat product( NX, NX );
     product.eye();
 
-    for ( int i = 1; i < NTAU; i++ ) {
+    for ( int i = 0; i < NTAU; i++ ) {
         UProduct[ i ].evaluateElements();
         product *= UProduct[ i ].getMatrix();
     }
@@ -144,7 +144,7 @@ cx_mat FermionMatrix::evaluateUProductDerivative( int delta_x, int delta_tau) {
     cx_mat product( NX, NX );
     product.eye();
 
-    for ( int i = 1; i < NTAU; i++ ) {
+    for ( int i = 0; i < NTAU; i++ ) {
         if ( i == delta_tau ) {
             UProduct[ i ].evaluateElementsOfDerivative( delta_x );
         } else {

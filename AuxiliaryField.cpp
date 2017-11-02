@@ -71,8 +71,8 @@ string AuxiliaryField::to_string() {
 
 void AuxiliaryField::initialize() {
     unsigned int SEED = 57856;
-    double RANGE_MIN = 0;
-    double RANGE_MAX = 5;
+    double RANGE_MIN = -M_PI;
+    double RANGE_MAX = M_PI;
 
     srand( SEED );
 
