@@ -24,12 +24,17 @@ cx_mat CLEvolver::calculateSigmaDot() {
     cx_mat sigma_dot( params.NX, params.NTAU);    sigma_dot.zeros();
     complex<double> deltaS;
     for ( int i = 0; i < params.NX; i++ ) {
+#pragma omp parallel for shared( M, Minv, sigma_dot ) private( deltaS )
         for ( int j = 0; j < params.NTAU; j++ ) {
             cx_mat deltaM = matM.evaluate_derivative(i, j);
-            deltaS = -2.0 * as_scalar( trace( Minv * deltaM ) );
+            deltaS = 2.0 * as_scalar( trace( Minv * deltaM ) );
             sigma_dot( i, j ) = deltaS;
         }
     }
+
+    complex<double> action = 2.0 * log( det( M ) );
+    double magnitude = sqrt( action.real() * action.real() + action.imag() * action.imag() );
+    cout << "         |  Action: " << magnitude << "    Cos: " << action.real() / magnitude << "    Sin: " << action.imag() / magnitude << endl;
 
     return sigma_dot;
 }
