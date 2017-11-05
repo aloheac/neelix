@@ -35,7 +35,7 @@ UMatrix::UMatrix( unsigned int thisNX, unsigned int thisTau, double this_dtau, d
 
 void UMatrix::evaluateElements() {
     cx_mat S( NX, NX );    S.zeros();
-    complex<double> A = sqrt( 2.0 * ( exp( dtau * g ) - 1.0 ) );
+    complex<double> A = sqrt( 2.0 * ( complex<double>( exp( dtau * g ) ) - 1.0 ) );
 
     // Generate potential energy (interaction) matrix S in coordinate basis.
     for ( unsigned int i = 0; i < NX; i++ ) {  // Since S is diagonal, only one loop required.
@@ -67,7 +67,7 @@ void UMatrix::evaluateElements() {
 
 void UMatrix::evaluateElementsOfDerivative( int delta_x ) {
     cx_mat S( NX, NX );    S.zeros();
-    complex<double> A = sqrt( 2.0 * ( exp( dtau * g ) - 1.0 ) );
+    complex<double> A = sqrt( 2.0 * ( exp( complex<double>( dtau * g ) ) - 1.0 ) );
 
     // Generate potential energy (interaction) matrix S in coordinate basis, where a derivative with respect to sigma
     // has been taken.

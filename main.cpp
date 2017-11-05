@@ -3,6 +3,7 @@
 #include "AuxiliaryField.h"
 #include "FermionMatrix.h"
 #include "CL.h"
+#include "HMC.h"
 #include "Observables.h"
 
 using namespace std;
@@ -19,7 +20,12 @@ int main() {
 
     cout << "Input parameters:" << endl;
     cout << "    NX: " << params.NX << endl;
+    cout << "    NTAU: " << params.NTAU << endl;
     cout << "    MU: " << params.mu << endl;
+    cout << "    BARE_COUPLING: " << params.g << endl;
+    cout << "    DT: " << params.dt << endl;
+    cout << "    DTAU: " << params.dtau << endl;
+    cout << "    XI: " << params.xi << endl;
 
     SigmaField sigma( 1, params.NX, params.NTAU );
     sigma.initialize();

@@ -71,16 +71,17 @@ string AuxiliaryField::to_string() {
 
 void AuxiliaryField::initialize() {
     unsigned int SEED = 57856;
-    double RANGE_MIN = -M_PI;
-    double RANGE_MAX = M_PI;
+    double RANGE_MIN = -1;
+    double RANGE_MAX = 1;
 
     srand( SEED );
 
-    double re_rand;
+    double re_rand, im_rand;
     for ( int x = 0; x < NX; x++ ) {
         for ( int tau = 0; tau < NTAU; tau++ ) {
             re_rand = ( (double)rand() / (double)RAND_MAX ) * ( RANGE_MAX - RANGE_MIN ) + RANGE_MIN;
-            elements[ x ][ tau ]  = re_rand;
+            im_rand = ( (double)rand() / (double)RAND_MAX ) * ( RANGE_MAX - RANGE_MIN ) + RANGE_MIN;
+            elements[ x ][ tau ]  = complex<double>( re_rand, im_rand );
         }
     }
 }
