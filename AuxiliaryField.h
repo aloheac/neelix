@@ -44,7 +44,7 @@ public:
     const int NTAU;
 
 protected:
-    std::default_random_engine rand_generator;
+    static std::default_random_engine rand_generator;
 
     std::complex<double>** elements;
 

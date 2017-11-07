@@ -9,6 +9,8 @@
 
 using namespace std;
 
+std::default_random_engine AuxiliaryField::rand_generator = std::default_random_engine( 34563546 );
+
 AuxiliaryFieldException::AuxiliaryFieldException( string thisMsg ) : exception(), msg( thisMsg ) { };
 
 const char* AuxiliaryFieldException::what() const throw() {
@@ -31,8 +33,6 @@ AuxiliaryField::AuxiliaryField( int thisDimension, int thisNx, int thisNtau ) : 
     } else {
         throw AuxiliaryFieldException( "AuxiliaryField: Requested field of spatial dimension other than 1; higher dimensions not yet supported." );
     }
-
-    rand_generator = default_random_engine( 956754 );
 }
 
 AuxiliaryField::~AuxiliaryField() {
