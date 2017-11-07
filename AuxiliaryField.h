@@ -32,6 +32,8 @@ public:
 
     std::string to_string();
 
+    std::complex<double> sum();
+
     void initialize();
 
     const int dimension;

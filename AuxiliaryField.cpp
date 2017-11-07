@@ -69,6 +69,16 @@ string AuxiliaryField::to_string() {
     return ss.str();
 }
 
+complex<double> AuxiliaryField::sum() {
+    complex<double> s;
+
+    for ( int x = 0; x < NX; x++ ) {
+        for ( int tau = 0; tau < NTAU; tau++ ) {
+            s += elements[ x ][ tau ];
+        }
+    }
+}
+
 void AuxiliaryField::initialize() {
     unsigned int SEED = 57856;
     double RANGE_MIN = -1;
