@@ -31,6 +31,8 @@ AuxiliaryField::AuxiliaryField( int thisDimension, int thisNx, int thisNtau ) : 
     } else {
         throw AuxiliaryFieldException( "AuxiliaryField: Requested field of spatial dimension other than 1; higher dimensions not yet supported." );
     }
+
+    rand_generator = default_random_engine( 956754 );
 }
 
 AuxiliaryField::~AuxiliaryField() {
@@ -77,25 +79,38 @@ complex<double> AuxiliaryField::sum() {
             s += elements[ x ][ tau ];
         }
     }
+
+    return s;
 }
 
-void AuxiliaryField::initialize() {
-    unsigned int SEED = 57856;
-    double RANGE_MIN = -1;
-    double RANGE_MAX = 1;
+void AuxiliaryField::initialize() {  }
 
-    srand( SEED );
+SigmaField::SigmaField( int thisDimension, int thisNx, int thisNtau ) : AuxiliaryField( thisDimension, thisNx, thisNtau ) { }
 
+void SigmaField::initialize() {
+    uniform_real_distribution<double> dist( -1.0, 1.0 );
     double re_rand, im_rand;
+
     for ( int x = 0; x < NX; x++ ) {
         for ( int tau = 0; tau < NTAU; tau++ ) {
-            re_rand = ( (double)rand() / (double)RAND_MAX ) * ( RANGE_MAX - RANGE_MIN ) + RANGE_MIN;
-            im_rand = ( (double)rand() / (double)RAND_MAX ) * ( RANGE_MAX - RANGE_MIN ) + RANGE_MIN;
+            re_rand = dist( rand_generator );
+            im_rand = 0.0;
             elements[ x ][ tau ]  = complex<double>( re_rand, im_rand );
         }
     }
 }
 
-SigmaField::SigmaField( int thisDimension, int thisNx, int thisNtau ) : AuxiliaryField( thisDimension, thisNx, thisNtau ) { }
-
 MomentumField::MomentumField( int thisDimension, int thisNx, int thisNtau ) : AuxiliaryField( thisDimension, thisNx, thisNtau ) { }
+
+void MomentumField::initialize() {
+    normal_distribution<double> rand_normal( 0.0, 1.0 );
+    double re_rand, im_rand;
+
+    for ( int x = 0; x < NX; x++ ) {
+        for ( int tau = 0; tau < NTAU; tau++ ) {
+            re_rand = rand_normal( rand_generator );
+            im_rand = 0.0;
+            elements[ x ][ tau ]  = complex<double>( re_rand, im_rand );
+        }
+    }
+}

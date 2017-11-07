@@ -8,6 +8,7 @@
 #include <complex>
 #include <exception>
 #include <string>
+#include <random>
 
 class AuxiliaryFieldException : public std::exception {
 public:
@@ -34,7 +35,7 @@ public:
 
     std::complex<double> sum();
 
-    void initialize();
+    virtual void initialize();
 
     const int dimension;
 
@@ -42,20 +43,26 @@ public:
 
     const int NTAU;
 
-private:
+protected:
+    std::default_random_engine rand_generator;
 
     std::complex<double>** elements;
+
 };
 
 class SigmaField : public AuxiliaryField {
 public:
     SigmaField( int thisDimension, int thisNx, int thisNtau );
 
+    void initialize();
+
 };
 
 class MomentumField : public AuxiliaryField {
 public:
     MomentumField( int thisDimension, int thisNx, int thisNtau );
+
+    void initialize();
 
 };
 
