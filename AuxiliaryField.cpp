@@ -76,7 +76,7 @@ complex<double> AuxiliaryField::sum() {
 
     for ( int x = 0; x < NX; x++ ) {
         for ( int tau = 0; tau < NTAU; tau++ ) {
-            s += elements[ x ][ tau ];
+            s += pow( elements[ x ][ tau ], 2 );
         }
     }
 
