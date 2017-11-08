@@ -20,6 +20,8 @@ private:
 
     arma::cx_mat calculatePiDot();
 
+    int sample_count;
+
     SigmaField* sigma;
 
     MomentumField* pi;

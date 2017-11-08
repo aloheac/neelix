@@ -8,7 +8,9 @@
 using namespace std;
 using namespace arma;
 
-HMCEvolver::HMCEvolver( MCParameters this_params, SigmaField* this_sigma, MomentumField* this_pi ) : params( this_params ), sigma( this_sigma ), pi( this_pi ) { }
+HMCEvolver::HMCEvolver( MCParameters this_params, SigmaField* this_sigma, MomentumField* this_pi ) : params( this_params ), sigma( this_sigma ), pi( this_pi ) {
+    sample_count = 0;
+}
 
 cx_mat HMCEvolver::calculatePiDot() {
     // Calculate the fermion matrix and its inverse for the current sigma field.
@@ -21,15 +23,23 @@ cx_mat HMCEvolver::calculatePiDot() {
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
             cx_mat deltaM = matM.evaluate_derivative(i, j);
-            deltaS = -2.0 * as_scalar( trace( Minv * deltaM ) );
+            deltaS = 2.0 * as_scalar( trace( Minv * deltaM ) );
             pi_dot( i, j ) = deltaS;
         }
     }
-    cout << 2.0 * log( det( M ) ) << endl;
+    cout << "        | Action: " << 2.0 * log( det( M ) )  + 0.5 * pi->sum() << endl;
     return pi_dot;
 }
 
 void HMCEvolver::integrateSigma() {
+    if ( sample_count > 10 ) {
+        cout << "        | New momentum field initialized." << endl;
+        sample_count = 0;
+        pi->initialize();
+    }
+
+    sample_count++;
+
     complex<double> current_sigma, current_pi, delta_sigma, delta_pi;
 
     cx_mat pi_dot_0 = calculatePiDot();
