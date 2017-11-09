@@ -11,8 +11,7 @@ using namespace arma;
 
 CLEvolver::CLEvolver( MCParameters this_params, SigmaField* this_sigma ) : params( this_params ), sigma( this_sigma ) {
     rand_generator = default_random_engine( 23412341 );
-    rand_normal = normal_distribution<double>( 0.0, 6.0 );
-    rand_uniform = uniform_real_distribution<double>( -M_PI, M_PI );
+    rand_normal = normal_distribution<double>( 0.0, sqrt( 2.0 ) );
 }
 
 cx_mat CLEvolver::calculateSigmaDot() {
@@ -77,7 +76,7 @@ void CLEvolver::integrateSigma() {
                 action = sigma_dot( i, j ) * params.dt;
                 total =  action + regulator + noise;
 
-                vec_stn.push_back( ((action ) / noise).real() );
+                vec_stn.push_back( ( (action + regulator ) / noise).real() );
                 vec_action_re.push_back( total.real() );
                 vec_action_im.push_back( total.imag() );
 

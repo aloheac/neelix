@@ -45,8 +45,6 @@ private:
 
     std::normal_distribution<double> rand_normal;
 
-    std::uniform_real_distribution<double> rand_uniform;
-
     std::default_random_engine rand_generator;
 
 };
