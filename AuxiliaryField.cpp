@@ -35,6 +35,20 @@ AuxiliaryField::AuxiliaryField( int thisDimension, int thisNx, int thisNtau ) : 
     }
 }
 
+AuxiliaryField::AuxiliaryField( const AuxiliaryField &obj ) : dimension( obj.dimension ), NX( obj.NX ), NTAU( obj.NTAU ) {
+    // ASSERTION: dimension is valid. Since fields are obtained from a constructed object, it should be.
+    if ( dimension == 1 ) {
+        elements = new complex<double>*[ NX ];
+        for ( int x = 0; x < NX; x++ ) {
+            elements[ x ] = new complex<double>[ NTAU ];
+
+            for ( int tau = 0; tau < NTAU; tau++ ) {  // Initialize values of array.
+                elements[ x ][ tau ] = obj.elements[ x ][ tau ];
+            }
+        }
+    }
+}
+
 AuxiliaryField::~AuxiliaryField() {
     for ( int i = 0; i < NX; i++ ) {
         delete[] elements[ i ];

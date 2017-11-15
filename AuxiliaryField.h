@@ -25,6 +25,8 @@ public:
 
     AuxiliaryField( int thisDimension, int thisNx, int thisNtau );
 
+    AuxiliaryField( const AuxiliaryField &obj );
+
     ~AuxiliaryField();
 
     void set( unsigned int x, unsigned int tau, std::complex<double> value );
