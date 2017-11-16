@@ -25,6 +25,10 @@ private:
     SigmaField* sigma;
 
     MomentumField* pi;
+
+    std::uniform_real_distribution<double> rand_metropolis;
+
+    std::default_random_engine rand_generator;
 };
 
 #endif //NEELIX_HMC_H
