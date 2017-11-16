@@ -99,6 +99,14 @@ complex<double> AuxiliaryField::sum() {
 
 void AuxiliaryField::initialize() {  }
 
+void AuxiliaryField::copy( AuxiliaryField* field ) {
+    for ( int x = 0; x < NX; x++ ) {
+        for ( int tau = 0; tau < NTAU; tau++ ) {
+            elements[ x ][ tau ]  = field->elements[ x ][ tau ];
+        }
+    }
+}
+
 SigmaField::SigmaField( int thisDimension, int thisNx, int thisNtau ) : AuxiliaryField( thisDimension, thisNx, thisNtau ) { }
 
 void SigmaField::initialize() {

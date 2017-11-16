@@ -39,6 +39,8 @@ public:
 
     virtual void initialize();
 
+    void copy( AuxiliaryField* field );
+
     const int dimension;
 
     const int NX;
