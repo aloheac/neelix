@@ -42,24 +42,23 @@ void UMatrix::evaluateElements() {
         S( i, i ) = 1.0 + A * sin( ptr_sigma->get( i, tau ) );
     }
 
+    cx_mat partialProduct;
+    complex<double> u_ij;
+    cx_mat basis_i( NX, 1 );
+    cx_mat basis_j( 1, NX );
+
     for ( unsigned int i = 0; i < NX; i++ ) {
-        cx_mat basis_i( NX, 1 );
         basis_i.zeros();
         basis_i( i, 0 ) = 1.0;
 
+        partialProduct = ifft( S * basis_i );
+        partialProduct =  fft( T * partialProduct );
+
         for ( unsigned int j = 0; j < NX; j++ ) {
-            cx_mat basis_j( 1, NX );
             basis_j.zeros();
             basis_j( 0, j ) = 1.0;
 
-            complex<double> u_ij;
-            cx_mat partialProduct;
-
-            partialProduct = ifft( S * basis_i );
-            partialProduct =  fft( T * partialProduct );
-            partialProduct = basis_j * partialProduct;
-            u_ij = as_scalar( partialProduct );  // Retrieve scalar from single-element matrix.
-
+            u_ij = as_scalar( basis_j * partialProduct );  // Retrieve scalar from single-element matrix.
             U( i, j ) = u_ij;
         }
     }
@@ -80,26 +79,24 @@ void UMatrix::evaluateElementsOfDerivative( int delta_x ) {
 
     }
 
+    cx_mat partialProduct;
+    complex<double> u_ij;
+    cx_mat basis_i( NX, 1 );
+    cx_mat basis_j( 1, NX );
+
     for ( unsigned int i = 0; i < NX; i++ ) {
-        cx_mat basis_i( NX, 1 );
         basis_i.zeros();
         basis_i( i, 0 ) = 1.0;
 
+        partialProduct = ifft( S * basis_i );
+        partialProduct =  fft( T * partialProduct );
+
         for ( unsigned int j = 0; j < NX; j++ ) {
-            cx_mat basis_j( 1, NX );
             basis_j.zeros();
             basis_j( 0, j ) = 1.0;
 
-            complex<double> u_ij;
-            cx_mat partialProduct;
-
-            partialProduct = ifft( S * basis_i );
-            partialProduct =  fft( T * partialProduct );
-            partialProduct = basis_j * partialProduct;
-            u_ij = as_scalar( partialProduct );  // Retrieve scalar from single-element matrix.
-
+            u_ij = as_scalar( basis_j * partialProduct );  // Retrieve scalar from single-element matrix.
             U( i, j ) = u_ij;
-
         }
     }
 }
