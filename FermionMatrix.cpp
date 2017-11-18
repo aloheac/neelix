@@ -18,7 +18,8 @@ UMatrix::UMatrix( unsigned int thisNX, unsigned int thisTau, double this_dtau, d
     }
 
     // Generate kinetic energy matrix T in momentum basis. This is calculated once at construction and then stored
-    // for all future calculations.
+    // for all future calculations. This matrix is defined such that it acts on both sides of the interaction matrix as
+    // per the Trotter-Suzuki decomposition; note the additional 1 / 2 in the exponential.
     T = cx_mat( NX, NX );
     T.zeros();
     int p_i;
@@ -28,7 +29,7 @@ UMatrix::UMatrix( unsigned int thisNX, unsigned int thisTau, double this_dtau, d
         if ( i <= ( NX - 1 ) / 2 ) { p_i = i; } else { p_i = -NX + i; }
 
         const double p2 = pow( 2.0 * p_i * M_PI / (double)NX, 2 );
-        T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) );
+        T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) / 2.0 );
     }
 
 }
@@ -51,8 +52,10 @@ void UMatrix::evaluateElements() {
         basis_i.zeros();
         basis_i( i, 0 ) = 1.0;
 
-        partialProduct = ifft( S * basis_i );
-        partialProduct =  fft( T * partialProduct );
+        partialProduct = T * fft( basis_i );
+        partialProduct = S * ifft( partialProduct );
+        partialProduct = T * fft( partialProduct );
+        partialProduct = ifft( partialProduct );
 
         for ( unsigned int j = 0; j < NX; j++ ) {
             basis_j.zeros();
@@ -88,8 +91,10 @@ void UMatrix::evaluateElementsOfDerivative( int delta_x ) {
         basis_i.zeros();
         basis_i( i, 0 ) = 1.0;
 
-        partialProduct = ifft( S * basis_i );
-        partialProduct =  fft( T * partialProduct );
+        partialProduct = T * fft( basis_i );
+        partialProduct = S * ifft( partialProduct );
+        partialProduct = T * fft( partialProduct );
+        partialProduct = ifft( partialProduct );
 
         for ( unsigned int j = 0; j < NX; j++ ) {
             basis_j.zeros();
