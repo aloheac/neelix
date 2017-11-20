@@ -10,8 +10,10 @@ using namespace arma;
 
 UMatrix::UMatrix( unsigned int thisNX, unsigned int thisTau, double this_dtau, double this_mu, double this_g, SigmaField* thisSigma )
         : NX( thisNX ), tau( thisTau ), ptr_sigma( thisSigma ), dtau( this_dtau ), mu( this_mu ), g( this_g ) {
+
     U = cx_mat( NX, NX );  // cx_mat is an Armadillo typedef for Mat< std::complex<double> > (complex dense matrix).
-    U.zeros();
+    dU = cx_mat( NX, NX );
+    dU_delta_x = -1;  // -1 denotes dU is invalid.
 
     if ( NX != ptr_sigma->NX ) {
         throw AuxiliaryFieldException( "UMatrix: NX dimension of the passed SigmaField does not match the dimension of this UMatrix instance." );
@@ -32,6 +34,8 @@ UMatrix::UMatrix( unsigned int thisNX, unsigned int thisTau, double this_dtau, d
         T( i, i ) = exp( -dtau * ( p2 / 2.0 - mu ) / 2.0 );
     }
 
+    // Evaluate elements of U.
+    evaluateElements();
 }
 
 void UMatrix::evaluateElements() {
@@ -67,7 +71,7 @@ void UMatrix::evaluateElements() {
     }
 }
 
-void UMatrix::evaluateElementsOfDerivative( int delta_x ) {
+void UMatrix::evaluateDerivative( int delta_x ) {
     cx_mat S( NX, NX );    S.zeros();
     complex<double> A = sqrt( 2.0 * ( exp( complex<double>( dtau * g ) ) - 1.0 ) );
 
@@ -101,13 +105,28 @@ void UMatrix::evaluateElementsOfDerivative( int delta_x ) {
             basis_j( 0, j ) = 1.0;
 
             u_ij = as_scalar( basis_j * partialProduct );  // Retrieve scalar from single-element matrix.
-            U( i, j ) = u_ij;
+            dU( i, j ) = u_ij;
         }
     }
+
+    dU_delta_x = delta_x;
 }
 
 cx_mat UMatrix::getMatrix() {
     return U;
+}
+
+cx_mat UMatrix::getDerivative( int delta_x ) {
+    if ( dU_delta_x != delta_x ) {
+        evaluateDerivative( delta_x );
+    }
+
+    return dU;
+}
+
+void UMatrix::reevaluate() {
+    evaluateElements();
+    dU_delta_x = -1;
 }
 
 string UMatrix::to_string() {
@@ -130,42 +149,35 @@ FermionMatrix::FermionMatrix( unsigned int this_NX, unsigned int this_NTAU, doub
     }
 }
 
-cx_mat FermionMatrix::evaluateUProduct() {
+cx_mat FermionMatrix::getMatrix() {
     cx_mat product( NX, NX );
     product.eye();
 
     for ( int i = 0; i < NTAU; i++ ) {
-        UProduct[ i ].evaluateElements();
         product *= UProduct[ i ].getMatrix();
     }
 
-    return product;
+    return eye( NX, NX ) + product;
 }
 
-cx_mat FermionMatrix::evaluateUProductDerivative( int delta_x, int delta_tau) {
+cx_mat FermionMatrix::getDerivative( int delta_x, int delta_tau ) {
     cx_mat product( NX, NX );
     product.eye();
 
     for ( int i = 0; i < NTAU; i++ ) {
         if ( i == delta_tau ) {
-            UProduct[ i ].evaluateElementsOfDerivative( delta_x );
+            product *= UProduct[ i ].getDerivative( delta_x );
         } else {
-            UProduct[ i ].evaluateElements();
+            product *= UProduct[ i ].getMatrix();
         }
-        product *= UProduct[ i ].getMatrix();
+
     }
 
     return product;
 }
 
-cx_mat FermionMatrix::evaluate() {
-    cx_mat U = evaluateUProduct();
-    U = eye( NX, NX ) + U;
-
-    return U;
-}
-
-cx_mat FermionMatrix::evaluate_derivative( int delta_x, int delta_tau ) {
-    cx_mat deltaU = evaluateUProductDerivative(delta_x, delta_tau);
-    return deltaU;
+void FermionMatrix::reevaluate() {
+    for ( int i = 0; i < NTAU; i++ ) {
+        UProduct[ i ].reevaluate();
+    }
 }

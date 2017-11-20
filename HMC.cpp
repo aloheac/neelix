@@ -17,7 +17,7 @@ HMCEvolver::HMCEvolver( MCParameters this_params, SigmaField* this_sigma, Moment
 cx_mat HMCEvolver::calculatePiDot() {
     // Calculate the fermion matrix and its inverse for the current sigma field.
     FermionMatrix matM( params.NX, params.NTAU, params.g, params.dtau, params.mu, sigma );
-    cx_mat M = matM.evaluate();
+    cx_mat M = matM.getMatrix();
     cx_mat Minv = inv( M );
 
     cx_mat pi_dot( params.NX, params.NTAU);    pi_dot.zeros();
@@ -25,7 +25,7 @@ cx_mat HMCEvolver::calculatePiDot() {
 #pragma omp parallel for shared( matM, M, Minv ) private( deltaS )
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
-            cx_mat deltaM = matM.evaluate_derivative(i, j);
+            cx_mat deltaM = matM.getDerivative(i, j);
             deltaS = 2.0 * as_scalar( trace( Minv * deltaM ) );
             pi_dot( i, j ) = deltaS;
         }
@@ -35,52 +35,49 @@ cx_mat HMCEvolver::calculatePiDot() {
 }
 
 void HMCEvolver::integrateSigma() {
-    if ( sample_count > 10 ) {
+    if ( sample_count == 10 ) {
         cout << "        | New momentum field initialized." << endl;
         sample_count = 0;
         pi->initialize();
-        sigma->initialize();
     }
 
     sample_count++;
 
-    complex<double> current_sigma, current_pi, delta_sigma, delta_pi;
-    SigmaField proposed_sigma( 1, params.NX, params.NTAU );
+    complex<double> delta_sigma, delta_pi;
     FermionMatrix matM( params.NX, params.NTAU, params.g, params.dtau, params.mu, sigma );
-    cx_mat M = matM.evaluate();
-    double S_initial = 2.0 * log( det( M ) ).real();
-
-    cx_mat pi_dot_0 = calculatePiDot();
+    cx_mat M = matM.getMatrix();
+    double S_initial = 2.0 * log( det( M ) ).real() + 0.5 * pi->sum().real();
 
     // Update sigma field.
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
-            delta_sigma = pi->get( i, j ) * params.dt + 0.5 * pi_dot_0( i, j ) * ( params.dt * params.dt );
-            proposed_sigma.set( i, j, sigma->get( i, j ) + delta_sigma );
+            delta_sigma = pi->get( i, j ) * params.dt;
+            sigma->set( i, j, sigma->get( i, j ) + delta_sigma );
         }
     }
 
-    matM = FermionMatrix( params.NX, params.NTAU, params.g, params.dtau, params.mu, &proposed_sigma );
-    M = matM.evaluate();
-    double S_final = 2.0 * log( det( M ) ).real();
-
-    // Perform Metropolis accept-reject.
-    double r = rand_metropolis( rand_generator );
-    if ( exp( -S_final + S_initial ) > r ) {
-        //delete sigma;
-        sigma->copy( &proposed_sigma );
-        cout << "        | Accept. ( dS = " << S_final - S_initial << ", r = " << r <<  " )" << endl;
-    } else {
-        cout << "        | Reject. ( dS = " << S_final - S_initial << " )" << endl;
-    }
-
-    cx_mat pi_dot_1 = calculatePiDot();
+    cx_mat pi_dot = calculatePiDot();
 
     // Update momentum field.
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
-            delta_pi = 0.5 * ( pi_dot_0( i, j ) + pi_dot_1( i, j ) ) * params.dt;
+            delta_pi = pi_dot( i, j ) * params.dt;
             pi->set( i, j, pi->get( i, j ) + delta_pi );
         }
+    }
+
+    matM = FermionMatrix( params.NX, params.NTAU, params.g, params.dtau, params.mu, sigma );
+    M = matM.getMatrix();
+
+
+
+    double S_final = 2.0 * log( det( M ) ).real() + 0.5 * pi->sum().real();
+
+    // Perform Metropolis accept-reject.
+    double r = rand_metropolis( rand_generator );
+    if ( exp( -S_final + S_initial ) > r ) {
+        cout << "        | Accept. ( exp[ dH ] = " << exp( -S_final + S_initial ) << ", r = " << r <<  " )" << endl;
+    } else {
+        cout << "        | Reject. ( exp[ dH ] = " << exp( -S_final + S_initial ) << ", r = " << r <<  " )" << endl;
     }
 }

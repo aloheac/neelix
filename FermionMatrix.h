@@ -13,15 +13,19 @@ class UMatrix {
 public:
     UMatrix( unsigned int NX, unsigned int tau, double dtau, double mu, double g, SigmaField* ptr_sigma );
 
-    void evaluateElements();
-
-    void evaluateElementsOfDerivative( int delta_x );
-
     arma::cx_mat getMatrix();
+
+    arma::cx_mat getDerivative( int delta_x );
+
+    void reevaluate();
 
     std::string to_string();
 
 private:
+    void evaluateElements();
+
+    void evaluateDerivative( int delta_x );
+
     unsigned int NX;
 
     unsigned int tau;
@@ -32,7 +36,11 @@ private:
 
     double g;
 
+    int dU_delta_x;
+
     arma::cx_mat U;
+
+    arma::cx_mat dU;
 
     arma::cx_mat T;
 
@@ -43,18 +51,13 @@ class FermionMatrix {
 public:
     FermionMatrix( unsigned int NX, unsigned int NTAU, double g, double dtau, double mu, SigmaField* sigma );
 
-    arma::cx_mat evaluate();
+    arma::cx_mat getMatrix();
 
-    arma::cx_mat evaluate_derivative( int delta_x, int delta_tau );
+    arma::cx_mat getDerivative( int delta_x, int delta_tau );
+
+    void reevaluate();
 
     SigmaField* ptr_sigma;
-
-
-
-    // Methods to be made private after debugging:
-    arma::cx_mat evaluateUProduct();
-
-    arma::cx_mat evaluateUProductDerivative( int delta_x, int delta_tau );
 
 private:
     unsigned int NX;
