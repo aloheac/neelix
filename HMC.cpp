@@ -20,17 +20,16 @@ cx_mat HMCEvolver::calculatePiDot() {
     cx_mat M = matM.getMatrix();
     cx_mat Minv = inv( M );
 
-    cx_mat pi_dot( params.NX, params.NTAU);    pi_dot.zeros();
-    complex<double> deltaS;
-#pragma omp parallel for shared( matM, M, Minv ) private( deltaS )
+    cx_mat pi_dot( params.NX, params.NTAU);
+
+#pragma omp parallel for shared( matM, M, Minv )
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
             cx_mat deltaM = matM.getDerivative(i, j);
-            deltaS = 2.0 * as_scalar( trace( Minv * deltaM ) );
-            pi_dot( i, j ) = deltaS;
+            pi_dot( i, j ) =  2.0 * as_scalar( trace( Minv * deltaM ) );
         }
     }
-    cout << "        | Action: " << 2.0 * log( det( M ) )  + 0.5 * pi->sum() << endl;
+    cout << "        | Action: " << 2.0 * log( det( M ) ) << endl;
     return pi_dot;
 }
 
@@ -40,13 +39,11 @@ void HMCEvolver::integrateSigma() {
         sample_count = 0;
         pi->initialize();
     }
-
     sample_count++;
 
+    FermionMatrix M( params, sigma );
     complex<double> delta_sigma, delta_pi;
-    FermionMatrix matM( params, sigma );
-    cx_mat M = matM.getMatrix();
-    double S_initial = 2.0 * log( det( M ) ).real() + 0.5 * pi->sum().real();
+    double S_initial = 2.0 * log( det( M.getMatrix() ) ).real() + 0.5 * pi->sum().real();
 
     // Update sigma field.
     for ( int i = 0; i < params.NX; i++ ) {
@@ -66,12 +63,8 @@ void HMCEvolver::integrateSigma() {
         }
     }
 
-    matM = FermionMatrix( params, sigma );
-    M = matM.getMatrix();
-
-
-
-    double S_final = 2.0 * log( det( M ) ).real() + 0.5 * pi->sum().real();
+    M.reevaluate();
+    double S_final = 2.0 * log( det( M.getMatrix() ) ).real() + 0.5 * pi->sum().real();
 
     // Perform Metropolis accept-reject.
     double r = rand_metropolis( rand_generator );

@@ -80,11 +80,8 @@ void UMatrix::evaluateDerivative( int delta_x ) {
     // has been taken.
     for ( unsigned int i = 0; i < params.NX; i++ ) {  // Since S is diagonal, only one loop required.
         if ( i == delta_x ) {
-            S( i, i ) = A * cos( ptr_sigma->get( i, tau ) );  // Derivative of V.
-        } else {
-            S( i, i ) = 0.0;  // Derivative at different spatial coordinate vanishes.
+            S(i, i) = A * cos(ptr_sigma->get(i, tau));  // Derivative of V.
         }
-
     }
 
     cx_mat partialProduct;
