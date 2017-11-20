@@ -9,9 +9,10 @@
 #include <vector>
 #include "AuxiliaryField.h"
 
+
 class UMatrix {
 public:
-    UMatrix( unsigned int NX, unsigned int tau, double dtau, double mu, double g, SigmaField* ptr_sigma );
+    UMatrix( int tau, MCParameters params, SigmaField* ptr_sigma );
 
     arma::cx_mat getMatrix();
 
@@ -26,17 +27,13 @@ private:
 
     void evaluateDerivative( int delta_x );
 
-    unsigned int NX;
+    MCParameters params;
 
-    unsigned int tau;
-
-    double dtau;
-
-    double mu;
-
-    double g;
+    int tau;
 
     int dU_delta_x;
+
+    std::complex<double> checksum;
 
     arma::cx_mat U;
 
@@ -49,7 +46,7 @@ private:
 
 class FermionMatrix {
 public:
-    FermionMatrix( unsigned int NX, unsigned int NTAU, double g, double dtau, double mu, SigmaField* sigma );
+    FermionMatrix( MCParameters params, SigmaField* sigma );
 
     arma::cx_mat getMatrix();
 
@@ -60,15 +57,7 @@ public:
     SigmaField* ptr_sigma;
 
 private:
-    unsigned int NX;
-
-    unsigned int NTAU;
-
-    double g;
-
-    double dtau;
-
-    double mu;
+    MCParameters params;
 
     std::vector<UMatrix> UProduct;
 

@@ -16,7 +16,7 @@ CLEvolver::CLEvolver( MCParameters this_params, SigmaField* this_sigma ) : param
 
 cx_mat CLEvolver::calculateSigmaDot() {
     // Calculate the fermion matrix and its inverse for the current sigma field.
-    FermionMatrix matM( params.NX, params.NTAU, params.g, params.dtau, params.mu, sigma );
+    FermionMatrix matM( params, sigma );
     cx_mat M = matM.getMatrix();
     cx_mat Minv = inv( M );
 
@@ -40,7 +40,7 @@ cx_mat CLEvolver::calculateSigmaDot() {
 
 cx_mat calculateAuxSigmaDot( MCParameters params, SigmaField* sigma ) {
     // Calculate the fermion matrix and its inverse for the current sigma field.
-    FermionMatrix matM( params.NX, params.NTAU, params.g, params.dtau, params.mu, sigma );
+    FermionMatrix matM( params, sigma );
     cx_mat M = matM.getMatrix();
     cx_mat Minv = inv( M );
 

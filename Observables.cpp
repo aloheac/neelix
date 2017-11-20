@@ -55,7 +55,7 @@ double freeGasDensity( int NX, double BETA, double MU ) {
 }
 
 complex<double> calculate_density( MCParameters params, SigmaField* sigma ) {
-    FermionMatrix matM( params.NX, params.NTAU, params.g, params.dtau, params.mu, sigma );
+    FermionMatrix matM( params, sigma );
     cx_mat M = matM.getMatrix();
     cx_mat U = M - eye( params.NX, params.NX );
     cx_mat invM = inv( M );

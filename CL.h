@@ -9,23 +9,6 @@
 #include <armadillo>
 #include "AuxiliaryField.h"
 
-struct MCParameters {
-    int NX;
-
-    int NTAU;
-
-    double g;
-
-    double beta;
-
-    double mu;
-
-    double dtau;
-
-    double dt;
-
-    double xi;
-};
 
 class CLEvolver {
 public:

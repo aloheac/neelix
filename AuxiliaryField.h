@@ -10,6 +10,24 @@
 #include <string>
 #include <random>
 
+struct MCParameters {
+    int NX;
+
+    int NTAU;
+
+    double g;
+
+    double beta;
+
+    double mu;
+
+    double dtau;
+
+    double dt;
+
+    double xi;
+};
+
 class AuxiliaryFieldException : public std::exception {
 public:
     AuxiliaryFieldException( std::string msg );

@@ -16,7 +16,7 @@ HMCEvolver::HMCEvolver( MCParameters this_params, SigmaField* this_sigma, Moment
 
 cx_mat HMCEvolver::calculatePiDot() {
     // Calculate the fermion matrix and its inverse for the current sigma field.
-    FermionMatrix matM( params.NX, params.NTAU, params.g, params.dtau, params.mu, sigma );
+    FermionMatrix matM( params, sigma );
     cx_mat M = matM.getMatrix();
     cx_mat Minv = inv( M );
 
@@ -35,7 +35,7 @@ cx_mat HMCEvolver::calculatePiDot() {
 }
 
 void HMCEvolver::integrateSigma() {
-    if ( sample_count == 10 ) {
+    if ( sample_count == 20 ) {
         cout << "        | New momentum field initialized." << endl;
         sample_count = 0;
         pi->initialize();
@@ -44,7 +44,7 @@ void HMCEvolver::integrateSigma() {
     sample_count++;
 
     complex<double> delta_sigma, delta_pi;
-    FermionMatrix matM( params.NX, params.NTAU, params.g, params.dtau, params.mu, sigma );
+    FermionMatrix matM( params, sigma );
     cx_mat M = matM.getMatrix();
     double S_initial = 2.0 * log( det( M ) ).real() + 0.5 * pi->sum().real();
 
@@ -66,7 +66,7 @@ void HMCEvolver::integrateSigma() {
         }
     }
 
-    matM = FermionMatrix( params.NX, params.NTAU, params.g, params.dtau, params.mu, sigma );
+    matM = FermionMatrix( params, sigma );
     M = matM.getMatrix();
 
 
