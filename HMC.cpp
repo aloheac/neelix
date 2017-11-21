@@ -22,11 +22,10 @@ cx_mat HMCEvolver::calculatePiDot() {
 
     cx_mat pi_dot( params.NX, params.NTAU);
 
-#pragma omp parallel for shared( matM, M, Minv )
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
             cx_mat deltaM = matM.getDerivative(i, j);
-            pi_dot( i, j ) =  2.0 * as_scalar( trace( Minv * deltaM ) );
+            pi_dot( i, j ) =  -2.0 * as_scalar( trace( Minv * deltaM ) );
         }
     }
     cout << "        | Action: " << 2.0 * log( det( M ) ) << endl;
@@ -45,25 +44,27 @@ void HMCEvolver::integrateSigma() {
     complex<double> delta_sigma, delta_pi;
     double S_initial = 2.0 * log( det( M.getMatrix() ) ).real() + 0.5 * pi->sum().real();
 
+    cx_mat pi_dot_0 = calculatePiDot();
+
     // Update sigma field.
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
-            delta_sigma = pi->get( i, j ) * params.dt;
+            delta_sigma = pi->get( i, j ) * params.dt + 0.5 * pi_dot_0( i, j ) * pow( params.dt, 2 );
             sigma->set( i, j, sigma->get( i, j ) + delta_sigma );
         }
     }
 
-    cx_mat pi_dot = calculatePiDot();
+    M.reevaluate();
+    cx_mat pi_dot_1 = calculatePiDot();
 
     // Update momentum field.
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
-            delta_pi = pi_dot( i, j ) * params.dt;
+            delta_pi = 0.5 * ( pi_dot_0( i, j ) + pi_dot_1( i, j ) ) * params.dt;
             pi->set( i, j, pi->get( i, j ) + delta_pi );
         }
     }
 
-    M.reevaluate();
     double S_final = 2.0 * log( det( M.getMatrix() ) ).real() + 0.5 * pi->sum().real();
 
     // Perform Metropolis accept-reject.
