@@ -23,7 +23,7 @@ cx_mat CLEvolver::calculateSigmaDot() {
     cx_mat sigma_dot( params.NX, params.NTAU);    sigma_dot.zeros();
     complex<double> deltaS;
     for ( int i = 0; i < params.NX; i++ ) {
-#pragma omp parallel for shared( M, Minv, sigma_dot ) private( deltaS )
+//#pragma omp parallel for shared( M, Minv, sigma_dot ) private( deltaS )
         for ( int j = 0; j < params.NTAU; j++ ) {
             cx_mat deltaM = matM.getDerivative(i, j);
             deltaS = 2.0 * as_scalar( trace( Minv * deltaM ) );
@@ -47,7 +47,7 @@ cx_mat calculateAuxSigmaDot( MCParameters params, SigmaField* sigma ) {
     cx_mat sigma_dot( params.NX, params.NTAU);    sigma_dot.zeros();
     complex<double> deltaS;
     for ( int i = 0; i < params.NX; i++ ) {
-#pragma omp parallel for shared( M, Minv, sigma_dot ) private( deltaS )
+//#pragma omp parallel for shared( M, Minv, sigma_dot ) private( deltaS )
         for ( int j = 0; j < params.NTAU; j++ ) {
             cx_mat deltaM = matM.getDerivative(i, j);
             deltaS = 2.0 * as_scalar( trace( Minv * deltaM ) );
