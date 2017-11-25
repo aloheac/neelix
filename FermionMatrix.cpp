@@ -61,27 +61,7 @@ void UMatrix::evaluateElements() {
         S( i, i ) = 1.0 + A * sin( ptr_sigma->get( i, tau ) );
     }
 
-    cx_mat partialProduct;
-    complex<double> u_ij;
-    cx_mat basis_i( params.NX, 1 );
-    cx_mat basis_j( 1, params.NX );
-
-    for ( unsigned int i = 0; i < params.NX; i++ ) {
-        basis_i.zeros();
-        basis_i( i, 0 ) = 1.0;
-
-        partialProduct = T_x * basis_i;
-        partialProduct = S * partialProduct;
-        partialProduct = T_x * partialProduct;
-
-        for ( unsigned int j = 0; j < params.NX; j++ ) {
-            basis_j.zeros();
-            basis_j( 0, j ) = 1.0;
-
-            u_ij = as_scalar( basis_j * partialProduct );  // Retrieve scalar from single-element matrix.
-            U( i, j ) = u_ij;
-        }
-    }
+    U = T_x * S * T_x;
 
     checksum = ptr_sigma->sum();
 }
@@ -98,27 +78,7 @@ void UMatrix::evaluateDerivative( int delta_x ) {
         }
     }
 
-    cx_mat partialProduct;
-    complex<double> u_ij;
-    cx_mat basis_i( params.NX, 1 );
-    cx_mat basis_j( 1, params.NX );
-
-    for ( unsigned int i = 0; i < params.NX; i++ ) {
-        basis_i.zeros();
-        basis_i( i, 0 ) = 1.0;
-
-        partialProduct = T_x * basis_i;
-        partialProduct = S *partialProduct;
-        partialProduct = T_x * partialProduct;
-
-        for ( unsigned int j = 0; j < params.NX; j++ ) {
-            basis_j.zeros();
-            basis_j( 0, j ) = 1.0;
-
-            u_ij = as_scalar( basis_j * partialProduct );  // Retrieve scalar from single-element matrix.
-            dU( i, j ) = u_ij;
-        }
-    }
+    dU = T_x * S * T_x;
 
     dU_delta_x = delta_x;
 }
