@@ -41,6 +41,8 @@ private:
 
     arma::cx_mat T;
 
+    arma::cx_mat T_x;
+
     SigmaField* ptr_sigma;
 };
 

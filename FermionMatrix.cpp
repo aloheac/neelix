@@ -33,6 +33,21 @@ UMatrix::UMatrix( int this_tau, MCParameters this_params, SigmaField* thisSigma 
         T( i, i ) = exp( -params.dtau * ( p2 / 2.0 - params.mu ) / 2.0 );
     }
 
+    // Generate transformation of the kinetic energy matrix T to the coordinate basis under a FFT, producing T_x.
+    T_x = cx_mat( params.NX, params.NX );
+    cx_mat basis_i( params.NX, 1 );
+    cx_mat basis_j( 1, params.NX );
+
+    for ( int i = 0; i < params.NX; i++ ) {
+        basis_i.zeros();
+        basis_i( i, 0 ) = 1.0;
+        for ( int j = 0; j < params.NX; j++ ) {
+            basis_j.zeros();
+            basis_j( 0, j ) = 1.0;
+            T_x( i, j ) = as_scalar( basis_j * ifft( T * fft( basis_i ) ) );
+        }
+    }
+
     // Evaluate elements of U. This evaluation will remain valid until the sigma field is modified.
     evaluateElements();
 }
@@ -55,10 +70,9 @@ void UMatrix::evaluateElements() {
         basis_i.zeros();
         basis_i( i, 0 ) = 1.0;
 
-        partialProduct = T * fft( basis_i );
-        partialProduct = S * ifft( partialProduct );
-        partialProduct = T * fft( partialProduct );
-        partialProduct = ifft( partialProduct );
+        partialProduct = T_x * basis_i;
+        partialProduct = S * partialProduct;
+        partialProduct = T_x * partialProduct;
 
         for ( unsigned int j = 0; j < params.NX; j++ ) {
             basis_j.zeros();
@@ -93,10 +107,9 @@ void UMatrix::evaluateDerivative( int delta_x ) {
         basis_i.zeros();
         basis_i( i, 0 ) = 1.0;
 
-        partialProduct = T * fft( basis_i );
-        partialProduct = S * ifft( partialProduct );
-        partialProduct = T * fft( partialProduct );
-        partialProduct = ifft( partialProduct );
+        partialProduct = T_x * basis_i;
+        partialProduct = S *partialProduct;
+        partialProduct = T_x * partialProduct;
 
         for ( unsigned int j = 0; j < params.NX; j++ ) {
             basis_j.zeros();
