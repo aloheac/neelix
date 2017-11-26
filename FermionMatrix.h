@@ -14,6 +14,8 @@ class UMatrix {
 public:
     UMatrix( int tau, MCParameters params, SigmaField* ptr_sigma );
 
+    UMatrix( const UMatrix &obj );
+
     arma::cx_mat getMatrix();
 
     arma::cx_mat getDerivative( int delta_x );
@@ -49,6 +51,8 @@ private:
 class FermionMatrix {
 public:
     FermionMatrix( MCParameters params, SigmaField* sigma );
+
+    FermionMatrix( const FermionMatrix &obj );
 
     arma::cx_mat getMatrix();
 

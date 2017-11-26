@@ -52,6 +52,21 @@ UMatrix::UMatrix( int this_tau, MCParameters this_params, SigmaField* thisSigma 
     evaluateElements();
 }
 
+UMatrix::UMatrix( const UMatrix &obj ) {
+    // Copy primitive data fields.
+    tau = obj.tau;
+    params = obj.params;
+    ptr_sigma = obj.ptr_sigma;
+    dU_delta_x = obj.dU_delta_x;
+    checksum = obj.checksum;
+
+    // Copy matrices using arma::mat copy constructor.
+    U = cx_mat( obj.U );
+    dU = cx_mat( obj.dU );
+    T = cx_mat( obj.T );
+    T_x = cx_mat( obj.T_x );
+}
+
 void UMatrix::evaluateElements() {
     cx_mat S( params.NX, params.NX );    S.zeros();
     complex<double> A = sqrt( 2.0 * ( complex<double>( exp( params.dtau * params.g ) ) - 1.0 ) );
@@ -63,7 +78,7 @@ void UMatrix::evaluateElements() {
 
     U = T_x * S * T_x;
 
-    checksum = ptr_sigma->sum();
+    if ( params.ENABLE_FIELD_CHECKSUM ) checksum = ptr_sigma->sum();
 }
 
 void UMatrix::evaluateDerivative( int delta_x ) {
@@ -84,7 +99,7 @@ void UMatrix::evaluateDerivative( int delta_x ) {
 }
 
 cx_mat UMatrix::getMatrix() {
-    if ( checksum != ptr_sigma->sum() ) {
+    if ( params.ENABLE_FIELD_CHECKSUM and checksum != ptr_sigma->sum() ) {
         throw AuxiliaryFieldException( "UMatrix: Matrix requested for the current sigma field which does not match the stored checksum. Matrix must be reevaluated." );
     }
 
@@ -123,6 +138,16 @@ FermionMatrix::FermionMatrix( MCParameters this_params, SigmaField* sigma ) : pa
     for ( unsigned int i = 0; i < params.NTAU; i++ ) {
         UProduct.push_back( UMatrix( i, params, ptr_sigma ) );
     }
+}
+
+FermionMatrix::FermionMatrix( const FermionMatrix &obj ) {
+    // Copy primitive data fields.
+    params = obj.params;
+    ptr_sigma = obj.ptr_sigma;
+
+    // Copy vector of U matrices. Copy constructor of vector will call copy constructor of UMatrix.
+    UProduct = vector<UMatrix>( obj.UProduct );
+
 }
 
 cx_mat FermionMatrix::getMatrix() {

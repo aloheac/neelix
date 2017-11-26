@@ -22,10 +22,19 @@ cx_mat HMCEvolver::calculatePiDot() {
 
     cx_mat pi_dot( params.NX, params.NTAU);
 
+    // Compute the force in parallel, where threads will compute each element of \dot{\pi} independently.
+    #pragma omp parallel for shared( pi_dot, matM, M, Minv )
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
-            cx_mat deltaM = matM.getDerivative(i, j);
-            pi_dot( i, j ) =  2.0 * as_scalar( trace( Minv * deltaM ) );
+            FermionMatrix private_matM( matM );  // Since FermionMatrix::getDerivative() mutates the object, create a
+                                                 // local copy of the shared matM object for each thread.
+            cx_mat deltaM = private_matM.getDerivative(i, j);
+
+            // Access to arma::Mat elements are NOT thread safe. Therefore, a critical region is needed here.
+            #pragma omp critical
+            {
+                pi_dot( i, j ) =  2.0 * as_scalar( trace( Minv * deltaM ) );
+            }
         }
     }
     cout << "        | Action: " << 2.0 * log( det( M ) ) << endl;

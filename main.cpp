@@ -17,6 +17,7 @@ int main() {
     params.mu = 0.0;
     params.dtau = 0.1;
     params.xi = 10;
+    params.ENABLE_FIELD_CHECKSUM = false;
 
     cout << "Input parameters:" << endl;
     cout << "    NX: " << params.NX << endl;
@@ -31,7 +32,12 @@ int main() {
     cout << "Calculated parameters:" << endl;
     cout << "    BETA: " << params.NTAU * params.dtau << endl;
     cout << "    LAMBDA: " << sqrt( params.NTAU * params.dtau ) * params.g << endl;
+    cout << "    A: " << sqrt( 2.0 * ( complex<double>( exp( params.dtau * params.g ) ) - 1.0 ) ) << endl;
     cout << "    BETA MU: " << params.NTAU * params.dtau * params.mu << endl;
+    cout << endl;
+
+    cout << "Performance settings: " << endl;
+    cout << "    FIELD CHECKSUM ENABLED: " << params.ENABLE_FIELD_CHECKSUM << endl;
     cout << endl;
 
     SigmaField sigma( 1, params.NX, params.NTAU );

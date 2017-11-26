@@ -26,6 +26,8 @@ struct MCParameters {
     double dt;
 
     double xi;
+
+    bool ENABLE_FIELD_CHECKSUM;
 };
 
 class AuxiliaryFieldException : public std::exception {
