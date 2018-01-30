@@ -6,17 +6,22 @@
 #include "HMC.h"
 #include "Observables.h"
 #include <complex.h>
+#include "ScimitarInput.h"
+
 using namespace std;
 
 int main() {
+    ScimitarInputParser sip( "params.inp" );
+    sip.parse();
+
     MCParameters params;
-    params.NX = 21;
-    params.NTAU = 60;
-    params.dt = 0.01;
-    params.g = 0.5;
-    params.mu = 0.0;
-    params.dtau = 0.1;
-    params.xi = 10;
+    params.NX = sip.getValueInt( 0 );
+    params.NTAU = sip.getValueInt( 1 );
+    params.dt = sip.getValueDouble( 2 );
+    params.g = sip.getValueDouble( 3 );
+    params.mu = sip.getValueDouble( 4 );
+    params.dtau = sip.getValueDouble( 5 );
+    params.xi = sip.getValueDouble( 6 );
     params.ENABLE_FIELD_CHECKSUM = false;
 
     cout << "Input parameters:" << endl;
