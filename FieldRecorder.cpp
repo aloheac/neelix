@@ -8,7 +8,7 @@
 
 using namespace std;
 
-FieldRecorder::FieldRecorder( MCParameters this_params, SigmaField *this_sigma ) : params( this_params ), sigma( this_sigma ) {
+FieldRecorder::FieldRecorder( MCParameters this_params, AuxiliaryField *this_sigma ) : params( this_params ), sigma( this_sigma ) {
 
 }
 
@@ -20,9 +20,8 @@ void FieldRecorder::write( int n ) {
 
     for ( int x = 0; x < params.NX; x++ ) {
         for ( int t = 0; t < params.NTAU; t++ ) {
-            ofs << sigma->get( x, t ).real() << " ";
+            ofs << x << "\t" << t << "\t" << sigma->get( x, t ).real() << "\n";
         }
-        ofs << "\n";
     }
 
     ofs.close();

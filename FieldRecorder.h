@@ -9,14 +9,14 @@
 
 class FieldRecorder {
 public:
-    FieldRecorder( MCParameters params, SigmaField* sigma );
+    FieldRecorder( MCParameters params, AuxiliaryField* sigma );
 
     void write( int n );
 
 private:
     MCParameters params;
 
-    SigmaField* sigma;
+    AuxiliaryField* sigma;
 };
 
 #endif //NEELIX_FIELDRECORDER_H
