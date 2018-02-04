@@ -24,6 +24,9 @@ int main() {
     params.xi = sip.getValueDouble( 6 );
     params.ENABLE_FIELD_CHECKSUM = false;
 
+    int N_STEPS = sip.getValueInt( 7 );
+    int OBSERVE_FREQ = sip.getValueInt( 8 );
+
     cout << "Input parameters:" << endl;
     cout << "    NX: " << params.NX << endl;
     cout << "    NTAU: " << params.NTAU << endl;
@@ -32,6 +35,8 @@ int main() {
     cout << "    DT: " << params.dt << endl;
     cout << "    DTAU: " << params.dtau << endl;
     cout << "    XI: " << params.xi << endl;
+    cout << "    N_STEPS: " << N_STEPS << endl;
+    cout << "    OBSERVE_FREQ: " << OBSERVE_FREQ << endl;
     cout << endl;
 
     cout << "Calculated parameters:" << endl;
@@ -55,11 +60,11 @@ int main() {
     vector<double> density;
 
     int num_samples = 0;
-    for ( int i = 0; i < 20000; i++ ) {
+    for ( int i = 0; i < N_STEPS; i++ ) {
         complex<double> next_density = calculate_density( params, &sigma );
-        if ( num_samples == 20 ) {
+        if ( num_samples == OBSERVE_FREQ ) {
             num_samples = 0;
-        density.push_back( next_density.real() );
+            density.push_back( next_density.real() );
         }
         num_samples++;
 

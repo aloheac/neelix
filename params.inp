@@ -5,3 +5,5 @@
 0.0     # mu
 0.1     # dtau
 0.1     # xi
+2000    # N_STEPS
+20      # OBSERVE_FREQ
