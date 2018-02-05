@@ -11,8 +11,7 @@ using namespace arma;
 UMatrix::UMatrix( int this_tau, MCParameters this_params, SigmaField* thisSigma ) : tau( this_tau ), params( this_params), ptr_sigma( thisSigma ) {
 
     U = cx_mat( params.NX, params.NX );  // cx_mat is an Armadillo typedef for Mat< std::complex<double> > (complex dense matrix).
-    dU = cx_mat( params.NX, params.NX );
-    dU_delta_x = -1;  // -1 denotes dU is invalid.
+    dU = new cx_mat[ params.NX ];  // Initialize array of matrix derivatives. Array deleted in destructor.
 
     if (params.NX != ptr_sigma->NX ) {
         throw AuxiliaryFieldException( "UMatrix: NX dimension of the passed SigmaField does not match the dimension of this UMatrix instance." );
@@ -50,6 +49,13 @@ UMatrix::UMatrix( int this_tau, MCParameters this_params, SigmaField* thisSigma 
 
     // Evaluate elements of U. This evaluation will remain valid until the sigma field is modified.
     evaluateElements();
+
+    // Evaluate derivatives of U for each spatial point in the lattice. This evaluation will remain valid until the
+    // sigma field is modified.
+    for ( int i = 0; i < params.NX; i++ ) {
+        evaluateDerivative( i );
+    }
+
 }
 
 UMatrix::UMatrix( const UMatrix &obj ) {
@@ -57,14 +63,21 @@ UMatrix::UMatrix( const UMatrix &obj ) {
     tau = obj.tau;
     params = obj.params;
     ptr_sigma = obj.ptr_sigma;
-    dU_delta_x = obj.dU_delta_x;
     checksum = obj.checksum;
 
     // Copy matrices using arma::mat copy constructor.
     U = cx_mat( obj.U );
-    dU = cx_mat( obj.dU );
     T = cx_mat( obj.T );
     T_x = cx_mat( obj.T_x );
+
+    dU = new cx_mat[ params.NX ];  // Array of matrices; copy each element.
+    for ( int i = 0; i < params.NX; i++ ) {
+        dU[ i ] = cx_mat( obj.dU[ i ] );
+    }
+}
+
+UMatrix::~UMatrix() {
+    delete[] dU;
 }
 
 void UMatrix::evaluateElements() {
@@ -93,9 +106,7 @@ void UMatrix::evaluateDerivative( int delta_x ) {
         }
     }
 
-    dU = T_x * S * T_x;
-
-    dU_delta_x = delta_x;
+    dU[ delta_x ] = T_x * S * T_x;
 }
 
 cx_mat UMatrix::getMatrix() {
@@ -107,18 +118,17 @@ cx_mat UMatrix::getMatrix() {
 }
 
 cx_mat UMatrix::getDerivative( int delta_x ) {
-    // If the currently stored derivative is invalid or is with repsect to a different coordinate, evaluate the
-    // derivative.
-    if ( dU_delta_x != delta_x ) {
-        evaluateDerivative( delta_x );
-    }
-
-    return dU;
+    return dU[ delta_x ];
 }
 
 void UMatrix::reevaluate() {
+    // Evaluate matrix elements of U.
     evaluateElements();
-    dU_delta_x = -1;  // Any stored derivative is invalid and needs to be recalculated.
+
+    // Evaluate derivatives of U with respect to each spatial lattice point.
+    for ( int i = 0; i < params.NX; i++ ) {
+        evaluateDerivative( i );
+    }
 }
 
 string UMatrix::to_string() {

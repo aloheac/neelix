@@ -16,6 +16,8 @@ public:
 
     UMatrix( const UMatrix &obj );
 
+    ~UMatrix();
+
     arma::cx_mat getMatrix();
 
     arma::cx_mat getDerivative( int delta_x );
@@ -33,13 +35,11 @@ private:
 
     int tau;
 
-    int dU_delta_x;
-
     std::complex<double> checksum;
 
     arma::cx_mat U;
 
-    arma::cx_mat dU;
+    arma::cx_mat* dU;
 
     arma::cx_mat T;
 

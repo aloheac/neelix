@@ -26,9 +26,7 @@ cx_mat HMCEvolver::calculatePiDot() {
     #pragma omp parallel for shared( pi_dot, matM, M, Minv )
     for ( int i = 0; i < params.NX; i++ ) {
         for ( int j = 0; j < params.NTAU; j++ ) {
-            FermionMatrix private_matM( matM );  // Since FermionMatrix::getDerivative() mutates the object, create a
-                                                 // local copy of the shared matM object for each thread.
-            cx_mat deltaM = private_matM.getDerivative(i, j);
+            cx_mat deltaM = matM.getDerivative(i, j);
 
             // Access to arma::Mat elements are NOT thread safe. Therefore, a critical region is needed here.
             #pragma omp critical
