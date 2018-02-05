@@ -67,5 +67,9 @@ private:
 
     std::vector<UMatrix> UProduct;
 
+    std::vector<arma::cx_mat> PartialProducts;
+
+    arma::cx_mat FullProduct;
+
 };
 #endif //NEELIX_FERMIONMATRIX_H

@@ -23,6 +23,8 @@ int main() {
     params.dtau = sip.getValueDouble( 5 );
     params.xi = sip.getValueDouble( 6 );
     params.ENABLE_FIELD_CHECKSUM = false;
+    params.N_PARTIAL_PRODUCTS = 10;
+    params.ENABLE_PARTIAL_PRODUCTS = params.N_PARTIAL_PRODUCTS > 1;
 
     int N_STEPS = sip.getValueInt( 7 );
     int OBSERVE_FREQ = sip.getValueInt( 8 );
@@ -48,6 +50,8 @@ int main() {
 
     cout << "Performance settings: " << endl;
     cout << "    FIELD CHECKSUM ENABLED: " << params.ENABLE_FIELD_CHECKSUM << endl;
+    cout << "    N_PARTIAL_PRODUCTS: " << params.N_PARTIAL_PRODUCTS << endl;
+    cout << "    PARTIAL PRODUCTS ENABLED: " << params.ENABLE_PARTIAL_PRODUCTS << endl;
     cout << endl;
 
     SigmaField sigma( 1, params.NX, params.NTAU );

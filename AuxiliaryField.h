@@ -28,6 +28,10 @@ struct MCParameters {
     double xi;
 
     bool ENABLE_FIELD_CHECKSUM;
+
+    int N_PARTIAL_PRODUCTS;
+
+    bool ENABLE_PARTIAL_PRODUCTS;
 };
 
 class AuxiliaryFieldException : public std::exception {

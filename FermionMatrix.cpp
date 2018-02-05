@@ -135,9 +135,15 @@ FermionMatrix::FermionMatrix( MCParameters this_params, SigmaField* sigma ) : pa
     const int SPATIAL_DIMENSION = 1;
     UProduct = vector<UMatrix>();
 
+    // Note that the elements of UMatrix are evaluated upon construction.
     for ( unsigned int i = 0; i < params.NTAU; i++ ) {
         UProduct.push_back( UMatrix( i, params, ptr_sigma ) );
     }
+
+    // If the use of partial products is enabled, these partial products must be evaluated upon construction of
+    // FermionMatrix.
+    PartialProducts = vector<cx_mat>();
+    if ( params.ENABLE_PARTIAL_PRODUCTS ) reevaluate();
 }
 
 FermionMatrix::FermionMatrix( const FermionMatrix &obj ) {
@@ -148,37 +154,102 @@ FermionMatrix::FermionMatrix( const FermionMatrix &obj ) {
     // Copy vector of U matrices. Copy constructor of vector will call copy constructor of UMatrix.
     UProduct = vector<UMatrix>( obj.UProduct );
 
+    // Copy vector of partial products.
+    PartialProducts = vector<cx_mat>( obj.PartialProducts );
 }
 
 cx_mat FermionMatrix::getMatrix() {
-    cx_mat product( params.NX, params.NX );
-    product.eye();
+    if ( params.ENABLE_PARTIAL_PRODUCTS ) {
+        return eye( params.NX, params.NX ) + FullProduct;
+    } else {
+        cx_mat product( params.NX, params.NX );
+        product.eye();
 
-    for ( int i = 0; i < params.NTAU; i++ ) {
-        product *= UProduct[ i ].getMatrix();
+        for ( int i = 0; i < params.NTAU; i++ ) {
+            product *= UProduct[ i ].getMatrix();
+        }
+
+        return eye( params.NX, params.NX ) + product;
     }
-
-    return eye( params.NX, params.NX ) + product;
 }
 
 cx_mat FermionMatrix::getDerivative( int delta_x, int delta_tau ) {
     cx_mat product( params.NX, params.NX );
     product.eye();
 
-    for ( int i = 0; i < params.NTAU; i++ ) {
-        if ( i == delta_tau ) {
-            product *= UProduct[ i ].getDerivative( delta_x );
-        } else {
+    if ( params.ENABLE_PARTIAL_PRODUCTS ) {
+        const int PARTIAL_PRODUCT_SIZE = params.NTAU / params.N_PARTIAL_PRODUCTS;
+        const int DELTA_TAU_PP_INDEX = delta_tau / PARTIAL_PRODUCT_SIZE;
+
+        // Multiply successive products of either PartialProducts[i] up to i = DELTA_TAU_PP_INDEX.
+        for ( int i = 0; i < DELTA_TAU_PP_INDEX; i++ ) {
+            product *= PartialProducts[ i ];
+        }
+
+        // Multiply successive products of UProduct[i] starting from where the last partial product ended, up to
+        // the contribution UProduct[delta_tau - 1].
+        for ( int i = DELTA_TAU_PP_INDEX * PARTIAL_PRODUCT_SIZE; i < delta_tau; i++ ) {
             product *= UProduct[ i ].getMatrix();
         }
 
-    }
+        // Multiply by functional derivative of UProduct[delta_tau] at (delta_tau, delta_x).
+        product *= UProduct[ delta_tau ].getDerivative( delta_x );
 
-    return product;
+        // Multiply successive products of UProduct[i] starting from delta_tau + 1, up to where the next partial product
+        // picks up.
+        int upperBound = PARTIAL_PRODUCT_SIZE * ( DELTA_TAU_PP_INDEX + 1 );
+        upperBound = ( upperBound < params.NTAU ) ? upperBound : params.NTAU;
+
+        for ( int i = delta_tau + 1; i < upperBound; i++ ) {
+            product *= UProduct[ i ].getMatrix();
+        }
+
+        // Multiply by remaining partial products.
+        for ( int i = DELTA_TAU_PP_INDEX + 1; i < params.N_PARTIAL_PRODUCTS; i++ ) {
+            product *= PartialProducts[ i ];
+        }
+
+        return product;
+    } else {
+        for ( int i = 0; i < params.NTAU; i++ ) {
+            if ( i == delta_tau ) {
+                product *= UProduct[ i ].getDerivative( delta_x );
+            } else {
+                product *= UProduct[ i ].getMatrix();
+            }
+        }
+
+        return product;
+    }
 }
 
 void FermionMatrix::reevaluate() {
+    // Reevaluate U matrices for the updated sigma field.
     for ( int i = 0; i < params.NTAU; i++ ) {
         UProduct[ i ].reevaluate();
+    }
+
+    // Reevaluate partial products of the U matrices.
+    if ( params.ENABLE_PARTIAL_PRODUCTS ) {
+        const int partialProductsSize = params.NTAU / params.N_PARTIAL_PRODUCTS;
+        PartialProducts.clear();
+
+        FullProduct = cx_mat( params.NX, params.NX );
+        FullProduct.eye();
+
+        int tau = 0;
+        while ( tau < params.NTAU ) {
+            cx_mat partialProduct( params.NX, params.NX );
+            partialProduct.eye();
+
+            for ( int i = 0; i < partialProductsSize; i++ ) {
+                partialProduct *= UProduct[ tau ].getMatrix();
+                tau++;
+                if ( tau == params.NTAU ) break;
+            }
+
+            FullProduct *= partialProduct;
+            PartialProducts.push_back( partialProduct );
+        }
     }
 }
