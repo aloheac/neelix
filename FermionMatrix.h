@@ -24,6 +24,8 @@ public:
 
     void reevaluate();
 
+    static void initialize( MCParameters params );
+
     std::string to_string();
 
 private:
@@ -41,9 +43,9 @@ private:
 
     arma::cx_mat* dU;
 
-    arma::cx_mat T;
+    static arma::cx_mat T;
 
-    arma::cx_mat T_x;
+    static arma::cx_mat T_x;
 
     SigmaField* ptr_sigma;
 };

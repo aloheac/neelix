@@ -54,6 +54,8 @@ int main() {
     cout << "    PARTIAL PRODUCTS ENABLED: " << params.ENABLE_PARTIAL_PRODUCTS << endl;
     cout << endl;
 
+    UMatrix::initialize( params );
+
     SigmaField sigma( 1, params.NX, params.NTAU );
     sigma.initialize();
 
