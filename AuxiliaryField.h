@@ -9,6 +9,7 @@
 #include <exception>
 #include <string>
 #include <random>
+#include "FFTWInterface.h"
 
 struct MCParameters {
     int NX;
@@ -32,6 +33,8 @@ struct MCParameters {
     int N_PARTIAL_PRODUCTS;
 
     bool ENABLE_PARTIAL_PRODUCTS;
+
+    FFTWInterface* fftInterface;
 };
 
 class AuxiliaryFieldException : public std::exception {
