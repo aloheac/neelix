@@ -5,6 +5,7 @@
 #ifndef NEELIX_FIELDRECORDER_H
 #define NEELIX_FIELDRECORDER_H
 
+#include "H5Cpp.h"
 #include "AuxiliaryField.h"
 
 class FieldRecorder {
@@ -19,4 +20,16 @@ private:
     AuxiliaryField* sigma;
 };
 
+
+class FieldSetRecorder {
+public:
+    FieldSetRecorder( const char *filename, const MCParameters &params );
+
+    void write( AuxiliaryField* sigma, std::complex<double> action );
+
+private:
+    const char* filename;
+
+    MCParameters params;
+};
 #endif //NEELIX_FIELDRECORDER_H
